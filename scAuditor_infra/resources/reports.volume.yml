@@ -1,0 +1,17 @@
+# Managed volume for storing generated audit report files (PDF, DOCX, HTML).
+#
+# Files are stored as: /Volumes/{catalog}/{schema}/reports/{session_id}/{report_id}.{format}
+#
+# Referenced by the scAuditor_agent app for uploading generated reports via
+# the AppKit files plugin. Metadata is tracked in the audit_reports UC table.
+
+resources:
+  volumes:
+    reports_volume:
+      catalog_name: ${resources.schemas.sc_auditor_schema.catalog_name}
+      schema_name: ${resources.schemas.sc_auditor_schema.name}
+      name: reports
+      volume_type: MANAGED
+      comment: >
+        Managed volume for storing generated audit report files (PDF, DOCX, HTML)
+        produced by the SC Auditor agent. Organized by session ID.

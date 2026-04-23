@@ -1,0 +1,89 @@
+# Unity Catalog schema for SC Auditor screen capture audit data.
+#
+# This is the ONLY resource file that should reference ${var.catalog} and
+# ${var.schema} directly. All other resources in this bundle (and in the
+# companion scAuditor_agent app bundle) must reference the schema through
+# deployed-resource substitutions:
+#
+#   Catalog name:  ${resources.schemas.sc_auditor_schema.catalog_name}
+#   Schema name:   ${resources.schemas.sc_auditor_schema.name}
+#   Schema ID:     ${resources.schemas.sc_auditor_schema.id}
+#   Full name:     ${resources.schemas.sc_auditor_schema.catalog_name}.${resources.schemas.sc_auditor_schema.name}
+#
+# This ensures the schema identity is always derived from the actual
+# deployed object, not from a loosely-coupled variable.
+#
+# NOTE: SC Auditor SPN grants (USE_SCHEMA, SELECT, MODIFY) are applied
+# dynamically by the DDL notebook (target-tables-ddl), not declared here.
+# Only admin, deploy SP, and user group grants are declared below.
+
+resources:
+  schemas:
+    sc_auditor_schema:
+      name: ${var.schema}
+      catalog_name: ${var.catalog}
+      comment: >
+        Unity Catalog schema for the SC Auditor screen capture audit tool.
+        Stores analytical tables for audit sessions, screenshots, extractions,
+        findings, and reports. Screenshots and report files are stored in
+        managed volumes within this schema.
+
+      # Prevent accidental deletion — this schema holds all audit data
+      lifecycle:
+        prevent_destroy: true
+
+      # Base grants — extended per-target below
+      grants:
+        - principal: account users
+          privileges:
+            - USE_SCHEMA
+
+# ---------------------------------------------------------------------------
+# Target-specific grants
+# (SC Auditor SPN grants are handled by the DDL notebook)
+# ---------------------------------------------------------------------------
+targets:
+
+  dev:
+    resources:
+      schemas:
+        sc_auditor_schema:
+          grants:
+            - principal: account users
+              privileges:
+                - USE_SCHEMA
+            - principal: ${var.run_as_user}
+              privileges:
+                - ALL_PRIVILEGES
+
+  hls_fde:
+    resources:
+      schemas:
+        sc_auditor_schema:
+          grants:
+            # Deploy service principal — full control
+            - principal: ${var.higher_level_service_principal}
+              privileges:
+                - ALL_PRIVILEGES
+            # Admin user
+            - principal: matthew.giglia@databricks.com
+              privileges:
+                - ALL_PRIVILEGES
+            # Read access for all workspace users
+            - principal: account users
+              privileges:
+                - USE_SCHEMA
+                - SELECT
+
+  prod:
+    resources:
+      schemas:
+        sc_auditor_schema:
+          grants:
+            - principal: matthew.giglia@databricks.com
+              privileges:
+                - ALL_PRIVILEGES
+            - principal: account users
+              privileges:
+                - USE_SCHEMA
+                - SELECT

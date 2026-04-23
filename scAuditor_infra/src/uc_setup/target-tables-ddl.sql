@@ -280,7 +280,7 @@ EXECUTE IMMEDIATE tbl_grnt_stmnt;
 
 -- DBTITLE 1,Grant Volume Access to Service Principal
 DECLARE OR REPLACE vol_grnt_stmnt STRING DEFAULT
-  "GRANT READ FILES, WRITE FILES ON SCHEMA " || catalog_use || "." || schema_use || " TO `" || spn_application_id || "`;";
+  "GRANT READ VOLUME, WRITE VOLUME ON SCHEMA " || catalog_use || "." || schema_use || " TO `" || spn_application_id || "`;";
 
 SELECT vol_grnt_stmnt;
 

@@ -1,0 +1,105 @@
+# Job to bootstrap and maintain the SC Auditor infrastructure.
+#
+# Two-task workflow:
+#   1. ensure_service_principal — creates (or finds) a least-privilege SPN
+#      dedicated to this schema, populates the secret scope with the SPN's
+#      client_id (under the key named by client_id_dbs_key) and workspace_url,
+#      grants scope READ, and outputs the SPN's application_id as a task value.
+#   2. create_target_tables — DDL + GRANT statements using the SPN from task 1.
+#
+# The client_secret must be provisioned separately by an admin via the
+# workspace UI, Databricks CLI, or external keystore, under the key named
+# by client_secret_dbs_key (schema-qualified in dev/hls_fde targets).
+#
+# NOTE: catalog and schema references use ${resources.schemas.sc_auditor_schema.*}
+#       per the bundle convention — never ${var.catalog} or ${var.schema} directly.
+
+resources:
+  jobs:
+    sc_auditor_uc_setup:
+      name: SC Auditor — UC Setup [${bundle.target}]
+
+      description: >
+        Bootstraps the SC Auditor infrastructure. Task 1 ensures a
+        least-privilege service principal (sc-auditor-{schema}) exists,
+        populates the secret scope with the SPN's client_id (under the
+        schema-qualified key name) and workspace_url, and grants the SPN
+        READ access to the scope.
+        Task 2 creates the UC analytical tables (audit_sessions,
+        audit_screenshots, audit_extractions, audit_findings, audit_reports,
+        target_systems) with liquid clustering and grants USE CATALOG /
+        USE SCHEMA / MODIFY / SELECT to the SPN. The client_secret must
+        be provisioned by an admin after the first run under the
+        schema-qualified key name. Idempotent — safe to re-run.
+
+      # Job-level parameters — available to all tasks via dbutils.widgets.get()
+      parameters:
+        - name: catalog_use
+          default: ${resources.schemas.sc_auditor_schema.catalog_name}
+        - name: schema_use
+          default: ${resources.schemas.sc_auditor_schema.name}
+        - name: secret_scope_name
+          default: ${var.secret_scope_name}
+        - name: client_id_dbs_key
+          default: ${var.client_id_dbs_key}
+        - name: client_secret_dbs_key
+          default: ${var.client_secret_dbs_key}
+
+      tasks:
+        # Task 1: Find or create the SC Auditor service principal
+        - task_key: ensure_service_principal
+          notebook_task:
+            notebook_path: ../src/uc_setup/ensure-service-principal.ipynb
+            source: WORKSPACE
+
+        # Task 2: DDL + grants — receives SPN application_id from task 1
+        - task_key: create_target_tables
+          depends_on:
+            - task_key: ensure_service_principal
+          notebook_task:
+            notebook_path: ../src/uc_setup/target-tables-ddl.sql
+            source: WORKSPACE
+            warehouse_id: ${resources.sql_warehouses.infra_warehouse.id}
+            base_parameters:
+              spn_application_id: "{{tasks.ensure_service_principal.values.spn_application_id}}"
+
+      # One run at a time — prevents concurrent DDL/GRANT conflicts
+      max_concurrent_runs: 1
+
+      # Timeout after 10 minutes
+      timeout_seconds: 600
+
+      tags:
+        component: setup
+        resource_type: tables
+
+      # No automatic schedule — run manually or via deploy.sh
+      # schedule:
+      #   quartz_cron_expression: "0 0 9 * * ?"
+      #   timezone_id: "America/Los_Angeles"
+      #   pause_status: "PAUSED"
+
+# Target-specific overrides
+targets:
+
+  hls_fde:
+    resources:
+      jobs:
+        sc_auditor_uc_setup:
+          permissions:
+            - user_name: matthew.giglia@databricks.com
+              level: CAN_MANAGE
+            - service_principal_name: ${var.higher_level_service_principal}
+              level: CAN_MANAGE
+            - group_name: users
+              level: CAN_VIEW
+
+  prod:
+    resources:
+      jobs:
+        sc_auditor_uc_setup:
+          permissions:
+            - user_name: matthew.giglia@databricks.com
+              level: CAN_MANAGE
+            - service_principal_name: ${var.higher_level_service_principal}
+              level: CAN_MANAGE

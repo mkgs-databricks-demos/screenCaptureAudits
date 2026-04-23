@@ -1,0 +1,18 @@
+# Managed volume for storing screenshot PNG files captured during audit sessions.
+#
+# Files are stored as: /Volumes/{catalog}/{schema}/screenshots/{session_id}/{screenshot_id}.png
+#
+# Referenced by the scAuditor_agent app for uploading screenshots via the
+# AppKit files plugin. Metadata is tracked in both Lakebase (operational)
+# and the audit_screenshots UC table (analytical).
+
+resources:
+  volumes:
+    screenshots_volume:
+      catalog_name: ${resources.schemas.sc_auditor_schema.catalog_name}
+      schema_name: ${resources.schemas.sc_auditor_schema.name}
+      name: screenshots
+      volume_type: MANAGED
+      comment: >
+        Managed volume for storing screenshot PNG files captured during
+        audit sessions by the SC Auditor agent. Organized by session ID.

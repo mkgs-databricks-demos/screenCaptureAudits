@@ -1,0 +1,175 @@
+# Databricks Asset Bundle — scAuditor_infra
+# Shared infrastructure for the SC Auditor screen capture audit tool.
+# Deploy this bundle BEFORE the scAuditor_agent application bundle.
+#
+# Manages: secret scopes, Unity Catalog schemas/volumes/grants,
+#          SQL warehouses, Lakebase projects, and bootstrap DDL jobs.
+#
+# See https://docs.databricks.com/en/dev-tools/bundles/settings.html
+
+bundle:
+  name: "scAuditor_infra"
+
+include:
+  - resources/*.schema.yml
+  - resources/*.secret_scope.yml
+  - resources/*.sql_warehouse.yml
+  - resources/*.job.yml
+  - resources/*.yml
+  - resources/*/*.yml
+
+# ---------------------------------------------------------------------------
+# Variable declarations
+# Assigned per-target below; referenced in resource YAML files.
+# ---------------------------------------------------------------------------
+#
+# CONVENTION — schema & catalog references:
+#   The `catalog` and `schema` variables below feed ONLY into the schema
+#   resource definition (resources/audits.schema.yml).
+#
+#   All OTHER resources (jobs, pipelines, apps, volumes, etc.) in this
+#   bundle and in the companion scAuditor_agent app bundle MUST reference
+#   the schema through deployed-resource substitutions:
+#
+#     ${resources.schemas.sc_auditor_schema.catalog_name}   — catalog
+#     ${resources.schemas.sc_auditor_schema.name}            — schema
+#     ${resources.schemas.sc_auditor_schema.id}              — schema ID
+#
+#   Similarly, the SQL warehouse is referenced as:
+#     ${resources.sql_warehouses.infra_warehouse.id}
+#
+#   This guarantees references are bound to the actual deployed object,
+#   not to a loosely-coupled variable that could drift.
+#
+# CONVENTION — secret scope key names:
+#   The `client_id_dbs_key` and `client_secret_dbs_key` variables control
+#   the key names used inside the shared secret scope. Targets override
+#   these to schema-qualified names (e.g. client_id_sc_auditor) so that
+#   multiple schemas can share a single scope without key collisions.
+#
+#   These variables are passed to the UC setup job as parameters and used
+#   by the ensure-service-principal notebook to store/check secrets.
+#   The companion scAuditor_agent bundle declares matching variables
+#   with identical per-target values.
+# ---------------------------------------------------------------------------
+variables:
+  catalog:
+    description: >
+      The Unity Catalog catalog for SC Auditor data objects.
+      USED ONLY by the schema resource — see convention note above.
+  schema:
+    description: >
+      The Unity Catalog schema name within the catalog.
+      USED ONLY by the schema resource — see convention note above.
+  secret_scope_name:
+    description: The Databricks secret scope name for SC Auditor credentials.
+    default: sc_auditor_credentials
+  client_id_dbs_key:
+    description: The key name for the SC Auditor OAuth2 M2M client ID in the secret scope.
+    default: client_id
+  client_secret_dbs_key:
+    description: The key name for the SC Auditor OAuth2 M2M client secret in the secret scope.
+    default: client_secret
+  run_as_user:
+    description: The user or service principal that workflows should run as.
+  higher_level_service_principal:
+    description: >
+      The service principal application ID for higher-level (non-dev) deployments.
+      Comment out or override if not using a service principal for deployments above dev.
+    default: acf021b4-87c6-44ff-b3d7-45c59d63fe4d
+  serverless_environment_version:
+    description: The serverless environment version for notebook/job tasks.
+    default: "5"
+  dashboard_embed_credentials:
+    description: >
+      true = dashboard uses owner's credentials; false = viewer's credentials.
+    default: false
+
+  # Tags — applied to all deployed resources via presets
+  tags_project:
+    default: Screen Capture Audits
+    description: Project tag for deployed resources.
+  tags_businessUnit:
+    default: Healthcare and Life Sciences
+    description: Business unit tag for cost and ROI allocation.
+  tags_developer:
+    default: matthew.giglia@databricks.com
+    description: Primary developer contact for Ops.
+  tags_requestedBy:
+    default: Healthcare Providers and Health Plans
+    description: Primary business-unit stakeholder(s).
+  tags_RemoveAfter:
+    default: 2027-04-23
+    description: >
+      Required Databricks demo-environment tag for long-lived demos.
+      Cannot exceed one year after the deployment date.
+
+# ---------------------------------------------------------------------------
+# Targets
+# ---------------------------------------------------------------------------
+targets:
+
+  # ── dev ──────────────────────────────────────────────────────────────────
+  dev:
+    mode: development
+    default: true
+    presets:
+      source_linked_deployment: false
+      tags:
+        project: ${var.tags_project}
+        businessUnit: ${var.tags_businessUnit}
+        requestedBy: ${var.tags_requestedBy}
+        developer: ${var.tags_developer}
+        RemoveAfter: ${var.tags_RemoveAfter}
+        env: ${bundle.target}
+    workspace:
+      host: https://fevm-hls-fde.cloud.databricks.com
+      root_path: /Workspace/Users/${var.run_as_user}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: hls_fde_dev
+      schema: sc_auditor
+      run_as_user: matthew.giglia@databricks.com
+      client_id_dbs_key: client_id_dev_matthew_giglia_${var.schema}
+      client_secret_dbs_key: client_secret_dev_matthew_giglia_${var.schema}
+
+  # ── hls_fde (production — same workspace as dev) ────────────────────────
+  hls_fde:
+    mode: production
+    presets:
+      source_linked_deployment: false
+      tags:
+        project: ${var.tags_project}
+        businessUnit: ${var.tags_businessUnit}
+        requestedBy: ${var.tags_requestedBy}
+        developer: ${var.tags_developer}
+        RemoveAfter: ${var.tags_RemoveAfter}
+        env: ${bundle.target}
+    workspace:
+      host: https://fevm-hls-fde.cloud.databricks.com
+      root_path: /Workspace/.bundle/${bundle.name}/${bundle.target}
+    # run_as:
+    #   user_name: ${var.run_as_user}
+    variables:
+      catalog: hls_fde
+      schema: sc_auditor
+      higher_level_service_principal: acf021b4-87c6-44ff-b3d7-45c59d63fe4d
+      run_as_user: ${var.higher_level_service_principal}
+      serverless_environment_version: "5"
+      client_id_dbs_key: client_id_${var.schema}
+      client_secret_dbs_key: client_secret_${var.schema}
+    permissions:
+      - user_name: matthew.giglia@databricks.com
+        level: CAN_MANAGE
+      - group_name: users
+        level: CAN_RUN
+      - service_principal_name: ${var.run_as_user}
+        level: CAN_MANAGE
+
+  # ── prod (placeholder — separate workspace TBD) ─────────────────────────
+  prod:
+    mode: production
+    workspace:
+      host: https://fevm-hls-fde.cloud.databricks.com
+      root_path: /Users/matthew.giglia@databricks.com/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: matthew.giglia@databricks.com

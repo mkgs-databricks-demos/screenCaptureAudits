@@ -11,6 +11,8 @@ import { createFindingTools } from './finding-tools.js';
 import { createMemoryTools } from './memory-tools.js';
 import { createPatternTools } from './pattern-tools.js';
 import { createLoginTools } from './login-tools.js';
+import { createReportTools } from './report-tools.js';
+import { createWorkflowTools } from './workflow-tools.js';
 
 export function createAllTools(
   appkit: AppKitServer,
@@ -24,5 +26,7 @@ export function createAllTools(
     ...createMemoryTools(appkit, ctx),
     ...createPatternTools(appkit, ctx),
     ...createLoginTools(appkit, browser, ctx),
+    ...createReportTools(appkit, ctx),
+    ...createWorkflowTools(appkit, ctx),
   ];
 }

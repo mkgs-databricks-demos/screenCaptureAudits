@@ -5,6 +5,7 @@ import { setupAgentRoutes } from './routes/agent-routes.js';
 import { setupPatternRoutes } from './routes/pattern-routes.js';
 import { setupScreenshotRoutes } from './routes/screenshot-routes.js';
 import { setupCredentialRoutes } from './routes/credential-routes.js';
+import { setupReportRoutes } from './routes/report-routes.js';
 
 createApp({
   plugins: [
@@ -22,6 +23,7 @@ createApp({
     await setupPatternRoutes(appkit);
     await setupScreenshotRoutes(appkit);
     await setupCredentialRoutes(appkit);
+    await setupReportRoutes(appkit);
 
     await appkit.server.start();
   })

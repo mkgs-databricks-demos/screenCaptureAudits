@@ -1,0 +1,48 @@
+# Runtime configuration for the SC Auditor AppKit application.
+#
+# Environment variables are injected from app resources defined in
+# resources/sc_auditor.app.yml via the valueFrom directive.
+#
+# Platform-injected (no valueFrom needed):
+#   PGHOST, PGPORT, PGDATABASE, PGUSER, PGSSLMODE — from postgres resource
+#   DATABRICKS_CLIENT_ID, DATABRICKS_CLIENT_SECRET — app's own SPN identity
+#
+# Platform-injected (when telemetry_export_destinations is configured):
+#   OTEL_EXPORTER_OTLP_ENDPOINT  — http://localhost:4314
+#   OTEL_EXPORTER_OTLP_PROTOCOL  — grpc
+#   OTEL_RESOURCE_ATTRIBUTES     — workspace.id, app.name
+#   OTEL_SERVICE_NAME            — app name
+#   OTEL_BSP_MAX_QUEUE_SIZE      — 10000 (span queue)
+#   OTEL_BLRP_MAX_QUEUE_SIZE     — 10000 (log queue)
+#   OTEL_BSP_MAX_EXPORT_BATCH_SIZE  — 512
+#   OTEL_BLRP_MAX_EXPORT_BATCH_SIZE — 512
+#   OTEL_BSP_SCHEDULE_DELAY      — 1000ms
+#   OTEL_BLRP_SCHEDULE_DELAY     — 1000ms
+#
+# Custom env vars (from secret scope + postgres resource):
+#   LAKEBASE_ENDPOINT            — Lakebase endpoint path (from postgres resource)
+#   SC_AUDITOR_CLIENT_ID         — SC Auditor SPN application_id
+#   SC_AUDITOR_CLIENT_SECRET     — SC Auditor SPN OAuth secret
+#   SC_AUDITOR_WORKSPACE_URL     — Databricks workspace URL
+
+command: ['npm', 'run', 'start']
+env:
+  # OpenTelemetry — enable trace sampling for custom instrumentation.
+  # The platform injects the OTLP endpoint and batch config automatically;
+  # this variable controls whether the app's OTel SDK generates spans.
+  - name: OTEL_TRACES_SAMPLER
+    value: 'parentbased_traceidratio'
+  - name: OTEL_TRACES_SAMPLER_ARG
+    value: '0.1'
+
+  # Lakebase — endpoint path for AppKit lakebase plugin
+  - name: LAKEBASE_ENDPOINT
+    valueFrom: postgres
+
+  # SC Auditor SPN — credentials from infra bundle's secret scope
+  - name: SC_AUDITOR_CLIENT_ID
+    valueFrom: sc-auditor-client-id
+  - name: SC_AUDITOR_CLIENT_SECRET
+    valueFrom: sc-auditor-client-secret
+  - name: SC_AUDITOR_WORKSPACE_URL
+    valueFrom: sc-auditor-workspace-url

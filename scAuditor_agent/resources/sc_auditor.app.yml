@@ -1,0 +1,168 @@
+# Databricks App — SC Auditor (AppKit)
+#
+# TypeScript/Node.js application built with @databricks/appkit (Express +
+# React + Vite). AI-powered screen capture audit tool that uses Playwright
+# browser automation to navigate target systems, capture screenshots,
+# extract data via ai_parse_document, and generate audit reports.
+#
+# Architecture:
+#   Browser (React UI) → tRPC → Agent Loop (LLM tool-use)
+#     → Playwright (headless Chromium) → target system screenshots
+#     → ai_parse_document (SQL warehouse) → extraction results
+#     → Lakebase (Postgres) → operational state, patterns, memory
+#     → UC Volumes → screenshots and report files
+#
+# Stack:
+#   Backend:  @databricks/appkit (Express server, plugin architecture)
+#   Frontend: React + Vite (via appkit-ui, Databricks branded)
+#   Browser:  Playwright (headless Chromium for screen capture)
+#   Agent:    Foundation Model API via UC AI Gateway (tool-use loop)
+#   Database: Lakebase Autoscaling (Postgres 17 via AppKit lakebase plugin)
+#   Runtime:  command: ['npm', 'run', 'start']
+#
+# Authentication:
+#   The app's auto-provisioned service principal reads SC Auditor SPN
+#   credentials (client_id, client_secret) from the infra bundle's
+#   secret scope. These are injected as environment variables via the
+#   app.yaml valueFrom directive. The app's own identity
+#   (DATABRICKS_CLIENT_ID, DATABRICKS_CLIENT_SECRET) is injected by the
+#   platform — the secret scope credentials are for the SC Auditor SPN.
+#
+# Secret scope keys (schema-qualified in dev/hls_fde):
+#   {client_id_dbs_key}     — SC Auditor SPN application_id
+#   {client_secret_dbs_key} — SC Auditor SPN OAuth secret (admin-provisioned)
+#   workspace_url           — Databricks workspace URL
+#
+# Observability (Beta):
+#   App telemetry is enabled via telemetry_export_destinations. The
+#   platform auto-configures an OTLP collector at localhost:4314 and
+#   streams traces, logs, and metrics to Unity Catalog tables:
+#     ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_logs
+#     ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_traces
+#     ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_metrics
+#   Custom instrumentation (server/otel.ts) adds Express/HTTP auto-tracing.
+#   See https://docs.databricks.com/aws/en/dev-tools/databricks-apps/observability/
+
+resources:
+  apps:
+    sc_auditor:
+      name: sc-auditor-${bundle.target}
+
+      description: >
+        AppKit (Node.js + React) application for automated screen capture
+        audits. An AI agent uses Playwright to navigate any web-based target
+        system, captures screenshots as evidence, extracts structured data
+        via ai_parse_document, records findings, and generates audit reports.
+        Learns reusable navigation patterns per target system. Designed for
+        regulated industries: healthcare claims, financial compliance,
+        government portal audits, and more.
+
+      source_code_path: ../sc-auditor-app
+
+      # -----------------------------------------------------------------------
+      # App Telemetry (Beta) — OpenTelemetry export to Unity Catalog
+      #
+      # Persists traces, logs, and metrics to three Delta tables in the
+      # sc_auditor schema. The platform injects OTEL_EXPORTER_OTLP_ENDPOINT
+      # and related env vars automatically when this is configured.
+      # -----------------------------------------------------------------------
+      telemetry_export_destinations:
+        - unity_catalog:
+            logs_table: ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_logs
+            traces_table: ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_traces
+            metrics_table: ${var.catalog}.${var.schema}.${var.telemetry_table_prefix}_otel_metrics
+
+      # -----------------------------------------------------------------------
+      # User API scopes — permissions delegated to the app for OBO operations.
+      #   sql         — execute SQL queries (ai_parse_document, analytical queries)
+      #   files.files — read/write UC Volume files (screenshots, reports)
+      # -----------------------------------------------------------------------
+      user_api_scopes:
+        - sql
+        - files.files
+
+      # -----------------------------------------------------------------------
+      # App resources — grant the app's auto-provisioned SPN access to
+      # SC Auditor credentials and Lakebase database.
+      # -----------------------------------------------------------------------
+      resources:
+        # OAuth M2M client ID for SC Auditor SPN authentication
+        - name: sc-auditor-client-id
+          description: SC Auditor SPN application_id (OAuth M2M client identifier)
+          secret:
+            scope: ${var.secret_scope_name}
+            key: ${var.client_id_dbs_key}
+            permission: READ
+
+        # OAuth M2M client secret for SC Auditor SPN authentication
+        - name: sc-auditor-client-secret
+          description: SC Auditor SPN OAuth M2M client secret (admin-provisioned)
+          secret:
+            scope: ${var.secret_scope_name}
+            key: ${var.client_secret_dbs_key}
+            permission: READ
+
+        # Databricks workspace URL
+        - name: sc-auditor-workspace-url
+          description: Databricks workspace URL for SDK/API calls
+          secret:
+            scope: ${var.secret_scope_name}
+            key: workspace_url
+            permission: READ
+
+        # Lakebase Postgres — direct wire protocol (port 5432) via AppKit
+        # lakebase plugin. The platform auto-injects PGHOST, PGPORT,
+        # PGDATABASE, PGUSER, PGSSLMODE. The app.yaml maps the endpoint
+        # path to LAKEBASE_ENDPOINT via valueFrom: postgres.
+        - name: postgres
+          description: Lakebase Postgres database for agent state, patterns, memory, and workflows
+          postgres:
+            branch: ${var.postgres_branch}
+            database: ${var.postgres_database}
+            permission: CAN_CONNECT_AND_CREATE
+
+      # Base permissions — all workspace users can use the app
+      permissions:
+        - user_name: matthew.giglia@databricks.com
+          level: CAN_MANAGE
+        - group_name: users
+          level: CAN_USE
+
+# ---------------------------------------------------------------------------
+# Target-specific overrides
+# ---------------------------------------------------------------------------
+targets:
+
+  dev:
+    resources:
+      apps:
+        sc_auditor:
+          name: ${bundle.target}-sc-auditor
+          permissions:
+            - user_name: matthew.giglia@databricks.com
+              level: CAN_MANAGE
+            - group_name: users
+              level: CAN_USE
+
+  hls_fde:
+    resources:
+      apps:
+        sc_auditor:
+          name: ${bundle.target}-sc-auditor
+          permissions:
+            - user_name: matthew.giglia@databricks.com
+              level: CAN_MANAGE
+            - service_principal_name: ${var.higher_level_service_principal}
+              level: CAN_MANAGE
+            - group_name: users
+              level: CAN_USE
+
+  prod:
+    resources:
+      apps:
+        sc_auditor:
+          permissions:
+            - user_name: matthew.giglia@databricks.com
+              level: CAN_MANAGE
+            - group_name: users
+              level: CAN_USE

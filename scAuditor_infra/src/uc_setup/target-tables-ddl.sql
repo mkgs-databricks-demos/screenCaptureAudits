@@ -292,7 +292,7 @@ EXECUTE IMMEDIATE vol_grnt_stmnt;
 -- COMMAND ----------
 
 -- DBTITLE 1,Verify Grants
-SHOW GRANTS ON SCHEMA IDENTIFIER(catalog_use || '.' || schema_use);
+EXECUTE IMMEDIATE ('SHOW GRANTS ON SCHEMA ' || catalog_use || '.' || schema_use);
 
 -- COMMAND ----------
 

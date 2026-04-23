@@ -1,4 +1,9 @@
 import { createApp, lakebase, server } from '@databricks/appkit';
+import { initLakebaseSchema } from './db/init-schema.js';
+import { setupAuditRoutes } from './routes/audit-routes.js';
+import { setupAgentRoutes } from './routes/agent-routes.js';
+import { setupPatternRoutes } from './routes/pattern-routes.js';
+import { setupScreenshotRoutes } from './routes/screenshot-routes.js';
 
 createApp({
   plugins: [
@@ -7,8 +12,14 @@ createApp({
   ],
 })
   .then(async (appkit) => {
-    // TODO: Register tRPC routes (audit, agent, patterns, screenshots)
-    // TODO: Initialize Lakebase schema (app.* tables) on first startup
+    // Initialize Lakebase schema (idempotent — safe on every startup)
+    await initLakebaseSchema(appkit);
+
+    // Register API routes
+    await setupAuditRoutes(appkit);
+    await setupAgentRoutes(appkit);
+    await setupPatternRoutes(appkit);
+    await setupScreenshotRoutes(appkit);
 
     await appkit.server.start();
   })

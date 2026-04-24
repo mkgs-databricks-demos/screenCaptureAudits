@@ -102,7 +102,7 @@ export function ThemeSelector() {
         title={`Accessibility: ${accessibilityMode === 'high-contrast' ? 'High Contrast' : 'Normal'}`}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-[var(--motion-fast)] ${
           accessibilityMode === 'high-contrast'
-            ? 'bg-[var(--dbx-blue-400)] text-[var(--dbx-navy-900)]'
+            ? 'bg-[var(--accent-info)] text-white'
             : 'bg-white/10 text-white/60 hover:text-white/90'
         }`}
       >

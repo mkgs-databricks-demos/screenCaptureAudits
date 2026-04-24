@@ -13,14 +13,12 @@ import {
   type CredentialReference,
 } from '@/lib/api';
 import {
-  Settings,
   KeyRound,
   Shield,
   Plus,
   Trash2,
   X,
   Database,
-  Lock,
   Sun,
   Moon,
   Monitor,
@@ -194,65 +192,7 @@ export function SettingsPage() {
           <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2]">Settings</h1>
         </div>
       </div>
-      <p className="text-[var(--text-secondary)] mb-8 ml-14">Manage credentials, appearance, and agent preferences.</p>
-
-      {/* ── Appearance Section ── */}
-      <section className="mb-10">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <Palette size={18} /> Appearance
-        </h2>
-        <Card elevated>
-          <CardContent className="space-y-6">
-            {/* Theme selector */}
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)] mb-3">Theme</p>
-              <div className="grid grid-cols-3 gap-3">
-                {themeOptions.map(({ value, label, icon, desc }) => (
-                  <button
-                    key={value}
-                    onClick={() => setTheme(value)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-[var(--motion-fast)] ${
-                      theme === value
-                        ? 'border-[var(--accent-primary)] bg-[var(--surface-tertiary)] shadow-sm'
-                        : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-tertiary)]'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === value ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--surface-tertiary)] text-[var(--text-secondary)]'}`}>
-                      {icon}
-                    </div>
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
-                    <span className="text-xs text-[var(--text-tertiary)] text-center">{desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Accessibility */}
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)] mb-3">Accessibility</p>
-              <button
-                onClick={() => setAccessibilityMode(accessibilityMode === 'normal' ? 'high-contrast' : 'normal')}
-                className={`flex items-center gap-3 w-full p-4 rounded-xl border-2 transition-all duration-[var(--motion-fast)] ${
-                  accessibilityMode === 'high-contrast'
-                    ? 'border-[var(--accent-info)] bg-[var(--accent-info-subtle)]'
-                    : 'border-[var(--border-default)] hover:border-[var(--border-strong)]'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accessibilityMode === 'high-contrast' ? 'bg-[var(--accent-info)] text-white' : 'bg-[var(--surface-tertiary)] text-[var(--text-secondary)]'}`}>
-                  <Accessibility size={20} />
-                </div>
-                <div className="text-left">
-                  <span className="text-sm font-medium text-[var(--text-primary)]">High Contrast Mode</span>
-                  <p className="text-xs text-[var(--text-secondary)]">Enhanced contrast for better readability</p>
-                </div>
-                <div className={`ml-auto w-10 h-6 rounded-full transition-colors duration-[var(--motion-fast)] ${accessibilityMode === 'high-contrast' ? 'bg-[var(--accent-info)]' : 'bg-[var(--border-default)]'}`}>
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-[var(--motion-fast)] mt-0.5 ${accessibilityMode === 'high-contrast' ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
-                </div>
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      <p className="text-[var(--text-secondary)] mb-8 ml-14">Manage credentials, agent preferences, and appearance.</p>
 
       {/* ── Credential Management ── */}
       <section className="mb-10">
@@ -308,7 +248,7 @@ export function SettingsPage() {
       </section>
 
       {/* ── Agent Preferences ── */}
-      <section>
+      <section className="mb-10">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
           <img src={ICON_AGENT_BRICKS} alt="" className="w-5 h-5" /> Agent Preferences
         </h2>
@@ -334,6 +274,64 @@ export function SettingsPage() {
             <p className="text-xs text-[var(--text-tertiary)] pt-2">
               Agent preferences are stored locally and apply to all future audit sessions.
             </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ── Appearance (last — also accessible from navbar theme selector) ── */}
+      <section>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+          <Palette size={18} /> Appearance
+        </h2>
+        <Card elevated>
+          <CardContent className="space-y-6">
+            {/* Theme selector */}
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)] mb-3">Theme</p>
+              <div className="grid grid-cols-3 gap-3">
+                {themeOptions.map(({ value, label, icon, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => setTheme(value)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-[var(--motion-fast)] ${
+                      theme === value
+                        ? 'border-[var(--accent-primary)] bg-[var(--surface-tertiary)] shadow-sm'
+                        : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-tertiary)]'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === value ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--surface-tertiary)] text-[var(--text-secondary)]'}`}>
+                      {icon}
+                    </div>
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
+                    <span className="text-xs text-[var(--text-tertiary)] text-center">{desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Accessibility */}
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)] mb-3">Accessibility</p>
+              <button
+                onClick={() => setAccessibilityMode(accessibilityMode === 'normal' ? 'high-contrast' : 'normal')}
+                className={`flex items-center gap-3 w-full p-4 rounded-xl border-2 transition-all duration-[var(--motion-fast)] ${
+                  accessibilityMode === 'high-contrast'
+                    ? 'border-[var(--accent-info)] bg-[var(--accent-info-subtle)]'
+                    : 'border-[var(--border-default)] hover:border-[var(--border-strong)]'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accessibilityMode === 'high-contrast' ? 'bg-[var(--accent-info)] text-white' : 'bg-[var(--surface-tertiary)] text-[var(--text-secondary)]'}`}>
+                  <Accessibility size={20} />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-[var(--text-primary)]">High Contrast Mode</span>
+                  <p className="text-xs text-[var(--text-secondary)]">Enhanced contrast for better readability</p>
+                </div>
+                <div className={`ml-auto w-10 h-6 rounded-full transition-colors duration-[var(--motion-fast)] ${accessibilityMode === 'high-contrast' ? 'bg-[var(--accent-info)]' : 'bg-[var(--border-default)]'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-[var(--motion-fast)] mt-0.5 ${accessibilityMode === 'high-contrast' ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                </div>
+              </button>
+            </div>
           </CardContent>
         </Card>
       </section>

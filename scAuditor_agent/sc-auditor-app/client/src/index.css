@@ -119,6 +119,58 @@
   --accent-info-subtle:    #04355D;
 }
 
+/* ── High Contrast Mode (Light) ──────────────────────────────────────────── */
+.high-contrast {
+  --surface-secondary:     #EEEDE9;          /* slightly darker secondary */
+  --surface-tertiary:      #DCE0E2;          /* more visible tertiary */
+
+  --text-primary:          #0B2026;          /* Navy 900 — maximum contrast */
+  --text-secondary:        #1B3139;          /* Navy 800 — promoted from gray */
+  --text-tertiary:         #303F47;          /* Gray Nav — visible as tertiary */
+  --text-disabled:         #90A5B1;          /* still muted but readable */
+
+  --border-default:        #90A5B1;          /* Navy 400 — much stronger borders */
+  --border-strong:         #1B3139;          /* Navy 800 — near-black borders */
+  --border-subtle:         #C4CCD6;          /* Navy 300 — visible even as subtle */
+
+  --accent-primary:        #BD2B26;          /* Lava 700 — darker for contrast */
+  --accent-primary-hover:  #801C17;          /* Lava 800 */
+  --accent-success:        #095A35;          /* Green 800 */
+  --accent-success-subtle: #9ED6C4;
+  --accent-warning:        #7D5319;          /* Yellow 800 */
+  --accent-warning-subtle: #FFCC66;
+  --accent-error:          #801C17;          /* Lava 800 */
+  --accent-error-subtle:   #FF9E94;          /* Lava 400 — more visible */
+  --accent-info:           #04355D;          /* Blue 800 */
+  --accent-info-subtle:    #8ACAFF;          /* Blue 400 — more visible */
+}
+
+/* ── High Contrast Mode (Dark) ───────────────────────────────────────────── */
+.dark.high-contrast {
+  --surface-secondary:     #143D4A;          /* brighter secondary */
+  --surface-tertiary:      #1B5162;          /* more visible tertiary */
+
+  --text-primary:          #FFFFFF;
+  --text-secondary:        #C4CCD6;          /* Navy 300 — brighter */
+  --text-tertiary:         #90A5B1;          /* Navy 400 — promoted */
+  --text-disabled:         #618794;
+
+  --border-default:        #618794;          /* Navy 500 — much stronger */
+  --border-strong:         #90A5B1;          /* Navy 400 */
+  --border-subtle:         #1B5162;          /* Navy 600 — visible */
+
+  --accent-primary:        #FF9E94;          /* Lava 400 — brighter for dark bg */
+  --accent-primary-hover:  #FF5F46;          /* Lava 500 */
+  --accent-success:        #9ED6C4;          /* Green 300 — brighter */
+  --accent-success-subtle: #095A35;
+  --accent-warning:        #FFCC66;          /* Yellow 400 — brighter */
+  --accent-warning-subtle: #7D5319;
+  --accent-error:          #FF9E94;          /* Lava 400 — brighter */
+  --accent-error-subtle:   #BD2B26;
+  --accent-info:           #BAE1FC;          /* Blue 300 — brighter */
+  --accent-info-subtle:    #04355D;
+}
+
 /* ── Base Styles ─────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;

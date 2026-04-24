@@ -2,10 +2,10 @@
  * Navigation pattern CRUD routes.
  */
 import type { AppKitServer } from '@databricks/appkit';
+import type { Express } from 'express';
 
-export async function setupPatternRoutes(appkit: AppKitServer): Promise<void> {
+export function setupPatternRoutes(appkit: AppKitServer, app: Express): void {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.app;
 
   // List patterns (optionally filtered by target system)
   app.get('/api/patterns', async (req, res) => {

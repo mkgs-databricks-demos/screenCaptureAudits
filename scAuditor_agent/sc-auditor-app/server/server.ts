@@ -17,13 +17,16 @@ createApp({
     // Initialize Lakebase schema (idempotent — safe on every startup)
     await initLakebaseSchema(appkit);
 
-    // Register API routes
-    await setupAuditRoutes(appkit);
-    await setupAgentRoutes(appkit);
-    await setupPatternRoutes(appkit);
-    await setupScreenshotRoutes(appkit);
-    await setupCredentialRoutes(appkit);
-    await setupReportRoutes(appkit);
+    // Register API routes via appkit.server.extend()
+    // extend() provides the Express app instance for custom route registration
+    appkit.server.extend((app: any) => {
+      setupAuditRoutes(appkit, app);
+      setupAgentRoutes(appkit, app);
+      setupPatternRoutes(appkit, app);
+      setupScreenshotRoutes(appkit, app);
+      setupCredentialRoutes(appkit, app);
+      setupReportRoutes(appkit, app);
+    });
 
     await appkit.server.start();
   })

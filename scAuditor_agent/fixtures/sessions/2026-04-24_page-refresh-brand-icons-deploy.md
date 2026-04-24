@@ -8,7 +8,7 @@
 
 ### Summary
 
-Continuation of the frontend brand refresh session. Completed all 5 remaining page components (Dashboard, Audit, History, Patterns, Settings) with Databricks brand CDN icons, semantic token fixes, and consistent typography hierarchy. Created a shared brand constants module. Diagnosed a TS build failure via OTel logs and fixed it. Successfully deployed the app.
+Continuation of the frontend brand refresh session. Completed all 5 remaining page components (Dashboard, Audit, History, Patterns, Settings) with Databricks brand CDN icons, semantic token fixes, and consistent typography hierarchy. Created a shared brand constants module. Diagnosed a TS build failure via OTel logs and fixed it. Then completed final cleanup: eliminated all remaining legacy `--dbx-*` variable references from component files, implemented the missing high-contrast CSS rules, increased navbar link hit targets, and reordered Settings page sections. Successfully deployed the app across 4 deployment cycles.
 
 ---
 
@@ -118,17 +118,79 @@ Client build: succeeded (Vite + tsc)
 
 ---
 
-### Remaining Legacy `--dbx-*` References
+### Legacy Variable Cleanup (follow-up pass)
 
-After the page updates, scanned all `client/src/` files for remaining `--dbx-*` usage:
+Eliminated the last 2 remaining `--dbx-*` references in component files:
 
-| File | Usage | Action |
+| File | Legacy Variable | Semantic Replacement |
 | --- | --- | --- |
-| `index.css` | Palette definitions (30 vars) | **Keep** — these are the raw color palette source; semantic tokens reference them |
-| `ThemeProvider.tsx` | 1 line — accessibility button active state | Cosmetic, no build impact. Can fix in follow-up |
-| `Navbar.tsx` | 1 line — brand mark gradient | Cosmetic, no build impact. Can fix in follow-up |
+| `ThemeProvider.tsx` | `--dbx-blue-400` / `--dbx-navy-900` (accessibility button active state) | `--accent-info` + `text-white` |
+| `Navbar.tsx` | `--dbx-lava-600` / `--dbx-lava-700` (brand mark gradient) | `--accent-primary` / `--accent-primary-hover` |
 
-All 5 page files are now fully clean of `--dbx-*` references.
+Additionally replaced the `ScanSearch` lucide icon in the Navbar brand mark with the actual Databricks white diamond symbol (`BRAND_DIAMOND_WHITE`) from the CDN.
+
+**Verification:** Full `grep` scan of all `.tsx`/`.ts` files confirmed zero remaining `--dbx-*` references outside `index.css` palette definitions.
+
+---
+
+### High Contrast Mode — Bug Fix
+
+**Problem:** The high-contrast toggle in both the navbar and Settings page toggled the `.high-contrast` class on `<html>` (via ThemeProvider), but **no CSS rules responded to that class**. The button appeared to do nothing.
+
+**Root cause:** The `.high-contrast` and `.dark.high-contrast` CSS rule blocks were never written in `index.css`. Only `:root` (light) and `.dark` had token overrides.
+
+**Fix:** Added 54 lines of high-contrast CSS to `index.css`:
+
+**`.high-contrast` (light mode overrides):**
+- Text: `--text-primary` → Navy 900, `--text-secondary` → Navy 800, `--text-tertiary` → Gray Nav (#303F47)
+- Borders: `--border-default` → Navy 400, `--border-strong` → Navy 800, `--border-subtle` → Navy 300
+- Accents shifted one stop darker: Lava 700, Green 800, Yellow 800, Blue 800
+- Surfaces: `--surface-secondary`/`tertiary` slightly darker for more visible layering
+
+**`.dark.high-contrast` (dark mode overrides):**
+- Text: `--text-secondary` → Navy 300, `--text-tertiary` → Navy 400 (brighter)
+- Borders: `--border-default` → Navy 500, `--border-strong` → Navy 400 (stronger)
+- Accents shifted one stop lighter: Lava 400, Green 300, Yellow 400, Blue 300
+- Surfaces: `--surface-secondary`/`tertiary` slightly brighter
+
+**Design rationale:** High contrast is an independent modifier — it overlays either light or dark mode. All overrides use the existing brand palette (no custom colors), just shifted to adjacent tint stops for increased differentiation.
+
+---
+
+### Navbar — Taller Click Targets
+
+Increased navbar link padding in two iterations based on user feedback:
+
+| Property | Original | Pass 1 | Pass 2 (final) |
+| --- | --- | --- | --- |
+| Vertical padding | `py-2` | `py-2.5` | `py-3.5` |
+| Horizontal padding | `px-3.5` | `px-4` | `px-5` |
+| Icon size | 16px | 18px | 18px |
+| Inter-link gap | `gap-0.5` | `gap-1` | `gap-1` |
+| Icon-label gap | `gap-2` | `gap-2` | `gap-2.5` |
+
+Final minimum hit target height: ~48px (meets WCAG 2.5.8 Target Size minimum). The right-side theme selector was intentionally left unchanged.
+
+---
+
+### Settings Page — Section Reorder
+
+Moved the **Appearance** section (theme selector + high-contrast toggle) from the top of the Settings page to the bottom, since these controls are also accessible from the navbar theme selector. New section order:
+
+1. **Credential Management** — most frequently used
+2. **Agent Preferences** — functional settings
+3. **Appearance** — also available in the navbar; least critical in this context
+
+---
+
+### Deployment History
+
+| # | Result | Cause |
+| --- | --- | --- |
+| 1 | FAILED | TS6133: unused `Settings`/`Lock` imports after replacing with CDN icons |
+| 2 | SUCCESS | Fixed unused imports |
+| 3 | SUCCESS | Legacy var cleanup in ThemeProvider + Navbar |
+| 4 | SUCCESS | High contrast CSS, taller nav links, Settings reorder |
 
 ---
 
@@ -158,6 +220,10 @@ Schema also contains 6 analytical tables (`audit_sessions`, `audit_screenshots`,
 
 5. **OTel logs for build diagnostics** — The `/logz` endpoint was unavailable, but the build error was captured in the OTel logs table. Querying UC directly is more reliable and provides structured data for debugging.
 
+6. **High contrast as tint-stop shifts** — Rather than introducing new non-brand colors, the high-contrast mode shifts each semantic token to an adjacent stop in the brand palette (e.g., Lava 600 → 700 in light, → 400 in dark). This maintains brand integrity while meaningfully increasing contrast ratios.
+
+7. **48px navbar hit targets** — Final `py-3.5 px-5` gives a ~48px minimum touch target, meeting WCAG 2.5.8. The theme selector remains compact since it's a secondary control.
+
 ---
 
 ### Files Modified Summary
@@ -169,7 +235,10 @@ Schema also contains 6 analytical tables (`audit_sessions`, `audit_screenshots`,
 | `client/src/pages/audit/AuditPage.tsx` | Replaced all `--dbx-*` vars, Agent Bricks bot avatar, diamond empty state |
 | `client/src/pages/history/HistoryPage.tsx` | Added diamond to page header |
 | `client/src/pages/patterns/PatternsPage.tsx` | Fixed step numbers to `--accent-primary`, diamond in header, consolidated imports |
-| `client/src/pages/settings/SettingsPage.tsx` | Lakebase + Agent Bricks section icons, diamond in header, removed unused imports |
+| `client/src/pages/settings/SettingsPage.tsx` | Lakebase + Agent Bricks section icons, diamond in header, removed unused imports, reordered sections (Appearance → bottom) |
+| `client/src/ThemeProvider.tsx` | Replaced `--dbx-blue-400`/`--dbx-navy-900` with `--accent-info`/`text-white` |
+| `client/src/components/Navbar.tsx` | Replaced `--dbx-lava-*` gradient with `--accent-primary`/`--accent-primary-hover`, added `BRAND_DIAMOND_WHITE`, increased link padding to `py-3.5 px-5` |
+| `client/src/index.css` | Added `.high-contrast` (light) and `.dark.high-contrast` (dark) CSS rule blocks — 54 lines of token overrides |
 
 ### Assistant Instruction Added
 

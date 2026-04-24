@@ -4,6 +4,7 @@ import { StatusBadge } from '@/components/Badge';
 import { Select } from '@/components/Input';
 import { EmptyState } from '@/components/EmptyState';
 import { listAudits, type AuditSession } from '@/lib/api';
+import { BRAND_DIAMOND } from '@/lib/brand';
 import { ClipboardCheck, Search } from 'lucide-react';
 
 export function HistoryPage() {
@@ -49,9 +50,14 @@ export function HistoryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1.5">Records</p>
-      <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">Audit History</h1>
-      <p className="text-[var(--text-secondary)] mb-6">Browse past audit sessions by target system, type, or status.</p>
+      <div className="flex items-center gap-4 mb-1">
+        <img src={BRAND_DIAMOND} alt="Databricks" className="w-10 h-10 opacity-90 drop-shadow-sm" />
+        <div>
+          <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1">Records</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2]">Audit History</h1>
+        </div>
+      </div>
+      <p className="text-[var(--text-secondary)] mb-6 ml-14">Browse past audit sessions by target system, type, or status.</p>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">

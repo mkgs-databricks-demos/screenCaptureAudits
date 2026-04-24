@@ -5,6 +5,7 @@ import { Badge } from '@/components/Badge';
 import { Input, Select } from '@/components/Input';
 import { EmptyState } from '@/components/EmptyState';
 import { useTheme } from '@/ThemeProvider';
+import { BRAND_DIAMOND, ICON_LAKEBASE, ICON_AGENT_BRICKS } from '@/lib/brand';
 import {
   listCredentials,
   createCredential,
@@ -186,16 +187,14 @@ export function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-center gap-3 mb-1">
-        <div className="w-9 h-9 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center text-[var(--accent-primary)]">
-          <Settings size={20} />
-        </div>
+      <div className="flex items-center gap-4 mb-1">
+        <img src={BRAND_DIAMOND} alt="Databricks" className="w-10 h-10 opacity-90 drop-shadow-sm" />
         <div>
           <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest">Preferences</p>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Settings</h1>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2]">Settings</h1>
         </div>
       </div>
-      <p className="text-[var(--text-secondary)] mb-8 ml-12">Manage credentials, appearance, and agent preferences.</p>
+      <p className="text-[var(--text-secondary)] mb-8 ml-14">Manage credentials, appearance, and agent preferences.</p>
 
       {/* ── Appearance Section ── */}
       <section className="mb-10">
@@ -258,7 +257,7 @@ export function SettingsPage() {
       {/* ── Credential Management ── */}
       <section className="mb-10">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <Lock size={18} /> Credential Management
+          <img src={ICON_LAKEBASE} alt="" className="w-5 h-5" /> Credential Management
         </h2>
 
         <div className="flex border-b border-[var(--border-default)] mb-4">
@@ -311,7 +310,7 @@ export function SettingsPage() {
       {/* ── Agent Preferences ── */}
       <section>
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <Settings size={18} /> Agent Preferences
+          <img src={ICON_AGENT_BRICKS} alt="" className="w-5 h-5" /> Agent Preferences
         </h2>
         <Card>
           <CardContent className="space-y-4">

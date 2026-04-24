@@ -4,6 +4,7 @@ import { Button } from '@/components/Button';
 import { Badge } from '@/components/Badge';
 import { Input, Textarea } from '@/components/Input';
 import { EmptyState } from '@/components/EmptyState';
+import { BRAND_DIAMOND } from '@/lib/brand';
 import {
   listPatterns,
   updatePattern,
@@ -24,6 +25,7 @@ import {
   ArrowRight,
   Check,
   X,
+  Loader2,
 } from 'lucide-react';
 
 const actionIcons: Record<string, React.ReactNode> = {
@@ -115,7 +117,7 @@ function PatternDetail({ pattern, onClose }: { pattern: NavigationPattern; onClo
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--surface-tertiary)] transition-colors duration-[var(--motion-fast)] text-left"
                 >
                   <GripVertical size={14} className="text-[var(--text-tertiary)] cursor-grab" />
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] text-white text-xs flex items-center justify-center font-bold shadow-sm">
+                  <div className="w-7 h-7 rounded-full bg-[var(--accent-primary)] text-white text-xs flex items-center justify-center font-bold shadow-sm">
                     {step.step_order}
                   </div>
                   <div className="text-[var(--text-tertiary)]">{actionIcons[step.action] ?? <ArrowRight size={14} />}</div>
@@ -143,9 +145,6 @@ function PatternDetail({ pattern, onClose }: { pattern: NavigationPattern; onClo
   );
 }
 
-// Need Loader2 for the save spinner
-import { Loader2 } from 'lucide-react';
-
 export function PatternsPage() {
   const [patterns, setPatterns] = useState<NavigationPattern[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,9 +171,14 @@ export function PatternsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1.5">Configuration</p>
-      <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">Navigation Patterns</h1>
-      <p className="text-[var(--text-secondary)] mb-8">
+      <div className="flex items-center gap-4 mb-1">
+        <img src={BRAND_DIAMOND} alt="Databricks" className="w-10 h-10 opacity-90 drop-shadow-sm" />
+        <div>
+          <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1">Configuration</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2]">Navigation Patterns</h1>
+        </div>
+      </div>
+      <p className="text-[var(--text-secondary)] mb-8 ml-14">
         View and edit learned navigation patterns. Add auditor context, notes, and fallback instructions.
       </p>
 

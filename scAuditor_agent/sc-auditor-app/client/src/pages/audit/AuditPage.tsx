@@ -6,6 +6,7 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Input';
 import { Card, CardContent } from '@/components/Card';
 import { StatusBadge } from '@/components/Badge';
+import { ICON_AGENT_BRICKS, BRAND_DIAMOND } from '@/lib/brand';
 import {
   createAudit,
   sendMessage,
@@ -17,11 +18,9 @@ import {
   Send,
   ScanSearch,
   Loader2,
-  Bot,
   User,
   Wrench,
   ImageIcon,
-  Sparkles,
 } from 'lucide-react';
 
 // ── New Audit Form ──
@@ -121,7 +120,7 @@ function ScreenshotViewer({ screenshots }: { screenshots: string[] }) {
 
   return (
     <div className="flex-1 flex flex-col gap-2">
-      <div className="flex-1 bg-[var(--dbx-navy-900)] rounded-xl overflow-hidden flex items-center justify-center shadow-inner">
+      <div className="flex-1 bg-black/90 rounded-xl overflow-hidden flex items-center justify-center shadow-inner">
         <img
           src={`data:image/png;base64,${latest}`}
           alt="Latest screenshot"
@@ -212,8 +211,8 @@ function ChatPanel({
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center py-12 animate-[fadeIn_var(--motion-normal)_var(--ease-out)]">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[var(--dbx-lava-600)]/20">
-              <Sparkles size={24} className="text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--surface-tertiary)] flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <img src={BRAND_DIAMOND} alt="Databricks" className="w-10 h-10" />
             </div>
             <p className="text-sm font-medium text-[var(--text-primary)] mb-1">Ready to audit</p>
             <p className="text-xs text-[var(--text-tertiary)] max-w-[200px] mx-auto">
@@ -224,14 +223,14 @@ function ChatPanel({
         {messages.map((msg) => (
           <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''} animate-[slideUp_var(--motion-fast)_var(--ease-out)]`}>
             {msg.role !== 'user' && (
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center flex-shrink-0 shadow-sm">
-                <Bot size={14} className="text-white" />
+              <div className="w-7 h-7 rounded-full bg-[var(--surface-tertiary)] flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                <img src={ICON_AGENT_BRICKS} alt="Agent" className="w-5 h-5" />
               </div>
             )}
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                 msg.role === 'user'
-                  ? 'bg-[var(--dbx-navy-800)] text-white rounded-br-md'
+                  ? 'bg-[var(--surface-nav)] text-white rounded-br-md'
                   : 'bg-[var(--surface-raised)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-bl-md'
               }`}
             >
@@ -251,7 +250,7 @@ function ChatPanel({
               )}
             </div>
             {msg.role === 'user' && (
-              <div className="w-7 h-7 rounded-full bg-[var(--dbx-navy-800)] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[var(--surface-nav)] flex items-center justify-center flex-shrink-0">
                 <User size={14} className="text-white" />
               </div>
             )}
@@ -259,8 +258,8 @@ function ChatPanel({
         ))}
         {sending && (
           <div className="flex gap-3 animate-[slideUp_var(--motion-fast)_var(--ease-out)]">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center">
-              <Loader2 size={14} className="text-white animate-spin" />
+            <div className="w-7 h-7 rounded-full bg-[var(--surface-tertiary)] flex items-center justify-center overflow-hidden">
+              <Loader2 size={14} className="text-[var(--accent-primary)] animate-spin" />
             </div>
             <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-[var(--text-secondary)]">
               Agent is working...
@@ -331,7 +330,7 @@ export function AuditPage() {
       {/* Session header */}
       <div className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center">
+          <div className="w-6 h-6 rounded-lg bg-[var(--accent-primary)] flex items-center justify-center">
             <ScanSearch size={12} className="text-white" />
           </div>
           <span className="text-sm font-medium text-[var(--text-primary)]">Session</span>

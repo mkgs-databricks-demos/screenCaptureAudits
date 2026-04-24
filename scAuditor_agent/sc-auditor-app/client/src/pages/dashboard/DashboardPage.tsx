@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { StatusBadge } from '@/components/Badge';
 import { EmptyState } from '@/components/EmptyState';
 import { listAudits, type AuditSession } from '@/lib/api';
+import { BRAND_DIAMOND } from '@/lib/brand';
 import {
   ScanSearch,
   ClipboardCheck,
@@ -51,10 +52,17 @@ export function DashboardPage() {
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Hero header */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1.5">Overview</p>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Dashboard</h1>
-          <p className="text-[var(--text-secondary)] mt-1">Audit activity and recent sessions at a glance.</p>
+        <div className="flex items-center gap-4">
+          <img
+            src={BRAND_DIAMOND}
+            alt="Databricks"
+            className="w-10 h-10 opacity-90 drop-shadow-sm"
+          />
+          <div>
+            <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1">Overview</p>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2]">Dashboard</h1>
+            <p className="text-[var(--text-secondary)] mt-0.5">Audit activity and recent sessions at a glance.</p>
+          </div>
         </div>
         <Button onClick={() => navigate('/audit')} size="lg">
           <Plus size={18} />

@@ -56,6 +56,7 @@ SCHEMA=""
 CLIENT_ID_DBS_KEY=""
 CLIENT_SECRET_DBS_KEY=""
 LAKEBASE_PROJECT_ID=""
+WORKSPACE_HOST=""
 
 # --------------------------------------------------------------------------- #
 # Defaults
@@ -181,7 +182,7 @@ resolve_infra_vars() {
   log "Resolving infrastructure variables (target: ${TARGET})"
 
   local summary_json
-  summary_json=$(cd "${bundle_dir}" && databricks bundle summary --target "${TARGET}" --output json 2>&1) || {
+  summary_json=$(cd "${bundle_dir}" && databricks bundle summary --target "${TARGET}" --output json) || {
     fail "Could not read bundle summary for ${INFRA_BUNDLE}.\n" \
          "  Deploy the infra bundle first:\n" \
          "    cd ${bundle_dir} && databricks bundle deploy --target ${TARGET}"
@@ -229,19 +230,26 @@ if not catalog:
 if not schema:
     schema = get_var('schema')
 
-# --- lakebase_project_id (from postgres_projects resource) ---
-project_id = ''
-pg_projects = resources.get('postgres_projects', {})
-for proj_name, proj in pg_projects.items():
-    if isinstance(proj, dict):
-        project_id = proj.get('project_id', '')
-        if project_id:
-            break
+# --- lakebase_project_id (prefer variable, fall back to resource) ---
+project_id = get_var('lakebase_project_id')
+if not project_id:
+    pg_projects = resources.get('postgres_projects', {})
+    for proj_name, proj in pg_projects.items():
+        if isinstance(proj, dict):
+            project_id = proj.get('project_id', '')
+            if project_id:
+                break
+
+# --- workspace_host (from workspace.host in bundle summary) ---
+workspace_host = data.get('workspace', {}).get('host', '')
 
 # Sanitise for shell eval safety (strip anything not alphanumeric/underscore/dash/dot)
 import re
 def safe(v):
     return re.sub(r'[^a-zA-Z0-9_.\-]', '', str(v))
+
+def safe_url(v):
+    return re.sub(r'[^a-zA-Z0-9_./:\-]', '', str(v))
 
 print(f'SCOPE_NAME=\"{safe(scope)}\"')
 print(f'CATALOG=\"{safe(catalog)}\"')
@@ -249,6 +257,7 @@ print(f'SCHEMA=\"{safe(schema)}\"')
 print(f'CLIENT_ID_DBS_KEY=\"{safe(client_id_key)}\"')
 print(f'CLIENT_SECRET_DBS_KEY=\"{safe(client_secret_key)}\"')
 print(f'LAKEBASE_PROJECT_ID=\"{safe(project_id)}\"')
+print(f'WORKSPACE_HOST=\"{safe_url(workspace_host)}\"')
 " 2>/dev/null)" || fail "Could not parse bundle summary JSON."
 
   # Check for parse error forwarded from python
@@ -261,12 +270,14 @@ print(f'LAKEBASE_PROJECT_ID=\"{safe(project_id)}\"')
   [[ -n "${SCHEMA}" ]]              || fail "Could not resolve schema from bundle summary."
   [[ -n "${CLIENT_ID_DBS_KEY}" ]]   || fail "Could not resolve client_id_dbs_key from bundle summary."
   [[ -n "${CLIENT_SECRET_DBS_KEY}" ]] || fail "Could not resolve client_secret_dbs_key from bundle summary."
+  [[ -n "${WORKSPACE_HOST}" ]]          || fail "Could not resolve workspace.host from bundle summary."
 
   ok "Secret scope:        ${SCOPE_NAME}"
   ok "Catalog:             ${CATALOG}"
   ok "Schema:              ${SCHEMA}"
   ok "Client ID key:       ${CLIENT_ID_DBS_KEY}"
   ok "Client secret key:   ${CLIENT_SECRET_DBS_KEY}"
+  ok "Workspace host:     ${WORKSPACE_HOST}"
 
   if [[ -n "${LAKEBASE_PROJECT_ID}" ]]; then
     ok "Lakebase project:    ${LAKEBASE_PROJECT_ID}"
@@ -283,7 +294,7 @@ print(f'LAKEBASE_PROJECT_ID=\"{safe(project_id)}\"')
 #                    resolved client_id_dbs_key and client_secret_dbs_key
 # --------------------------------------------------------------------------- #
 build_key_arrays() {
-  AUTO_PROVISIONED_KEYS=("${CLIENT_ID_DBS_KEY}" workspace_url)
+  AUTO_PROVISIONED_KEYS=("${CLIENT_ID_DBS_KEY}" "workspace_url")
   ADMIN_PROVISIONED_KEYS=("${CLIENT_SECRET_DBS_KEY}")
   REQUIRED_SCOPE_KEYS=("${AUTO_PROVISIONED_KEYS[@]}" "${ADMIN_PROVISIONED_KEYS[@]}")
 }
@@ -318,7 +329,7 @@ check_lakebase_status() {
 
   # Verify the project is accessible
   local project_json
-  project_json=$(databricks postgres get-project "${project_id}" --output json 2>&1) || {
+  project_json=$(databricks postgres get-project "projects/${project_id}" --output json) || {
     warn "Lakebase project '${project_id}' not found or not accessible."
     warn "If the project was just created, it may still be initializing."
     return 0
@@ -327,7 +338,7 @@ check_lakebase_status() {
 
   # List endpoints on the production branch
   local endpoints_json
-  endpoints_json=$(databricks postgres list-endpoints "projects/${project_id}/branches/production" --output json 2>&1) || {
+  endpoints_json=$(databricks postgres list-endpoints "projects/${project_id}/branches/production" --output json) || {
     warn "Could not list endpoints for project '${project_id}' branch 'production'."
     warn "The branch or endpoint may still be initializing."
     return 0
@@ -399,7 +410,7 @@ verify_infra_readiness() {
 
   # ---- 1. Secret scope keys -----------------------------------------------
   local secrets_json
-  secrets_json=$(databricks secrets list-secrets --scope "${SCOPE_NAME}" --output json 2>&1) || {
+  secrets_json=$(databricks secrets list-secrets "${SCOPE_NAME}" --output json) || {
     echo ""
     echo "  Secret scope '${SCOPE_NAME}' not found or not accessible."
     echo "  The UC setup job must run first to create the SPN and populate secrets:"
@@ -415,8 +426,11 @@ verify_infra_readiness() {
   present_keys=$(echo "${secrets_json}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
-for s in data.get('secrets', []):
-    print(s.get('key', ''))
+# Handle both formats: REST API {'secrets': [...]} and CLI bare array [...]
+secrets = data.get('secrets', data) if isinstance(data, dict) else data
+for s in secrets:
+    if isinstance(s, dict):
+        print(s.get('key', ''))
 " 2>/dev/null) || fail "Could not parse secrets list from scope '${SCOPE_NAME}'."
 
   local missing_auto=()
@@ -492,9 +506,8 @@ for s in data.get('secrets', []):
     echo "     • Databricks CLI: databricks account service-principal-secrets create <sp_id>"
     echo ""
     echo "  2. Store it in the secret scope:"
-    echo "     databricks secrets put-secret \\"
-    echo "       --scope ${SCOPE_NAME} \\"
-    echo "       --key ${CLIENT_SECRET_DBS_KEY} \\"
+    echo "     databricks secrets put-secret ${SCOPE_NAME} \\"
+    echo "       ${CLIENT_SECRET_DBS_KEY} \\"
     echo '       --string-value "<secret>"'
     echo ""
     echo "  Use --skip-checks to deploy the app bundle without this key."

@@ -70,7 +70,11 @@ CLUSTER BY AUTO
 COMMENT 'Top-level audit session tracking. One row per audit session regardless of target system.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -97,7 +101,11 @@ CLUSTER BY AUTO
 COMMENT 'Screenshot evidence captured during audit sessions. Each row represents one browser screenshot with metadata and Volume storage path.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -122,7 +130,11 @@ CLUSTER BY AUTO
 COMMENT 'Information extracted from screenshots via ai_parse_document. Each row is one extraction pass against a screenshot.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -149,7 +161,11 @@ CLUSTER BY AUTO
 COMMENT 'Individual findings or observations recorded during an audit. Findings may be linked to specific screenshots and extractions.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -175,7 +191,11 @@ CLUSTER BY AUTO
 COMMENT 'Generated audit report packages. Each row tracks a report file stored in a UC Volume.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -200,7 +220,12 @@ CLUSTER BY AUTO
 COMMENT 'Registry of target systems that have been audited. Used for analytics, pattern grouping, and system discovery.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'quality' = 'gold',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'delta.feature.allowColumnDefaults' = 'supported',
+  'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
 
@@ -261,7 +286,7 @@ EXECUTE IMMEDIATE tbl_grnt_stmnt;
 
 -- DBTITLE 1,Grant Volume Access to Service Principal
 DECLARE OR REPLACE vol_grnt_stmnt STRING DEFAULT
-  "GRANT READ FILES, WRITE FILES ON SCHEMA " || catalog_use || "." || schema_use || " TO `" || spn_application_id || "`;";
+  "GRANT READ VOLUME, WRITE VOLUME ON SCHEMA " || catalog_use || "." || schema_use || " TO `" || spn_application_id || "`;";
 
 SELECT vol_grnt_stmnt;
 
@@ -273,7 +298,7 @@ EXECUTE IMMEDIATE vol_grnt_stmnt;
 -- COMMAND ----------
 
 -- DBTITLE 1,Verify Grants
-SHOW GRANTS ON SCHEMA IDENTIFIER(catalog_use || '.' || schema_use);
+EXECUTE IMMEDIATE ('SHOW GRANTS ON SCHEMA ' || catalog_use || '.' || schema_use);
 
 -- COMMAND ----------
 

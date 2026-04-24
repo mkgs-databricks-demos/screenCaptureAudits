@@ -50,7 +50,7 @@ resources:
   # -------------------------------------------------------------------------
   postgres_projects:
     sc_auditor_lakebase:
-      project_id: sc-auditor
+      project_id: ${var.lakebase_project_id}
       display_name: SC Auditor — Lakebase
       pg_version: 17
 
@@ -76,6 +76,21 @@ resources:
   #   1. It already exists when the project is created
   #   2. Terraform cannot import pre-existing branches without state surgery
   #   3. Protection and expiry are correct by default
+  #
+  # Auto-created resource identifiers (query via CLI or REST API):
+  #   Branch:   projects/{project_id}/branches/production  (branch_id: production)
+  #   Database: projects/{project_id}/branches/production/databases/{auto-generated-id}
+  #             (postgres_database name: databricks_postgres — NOT the resource ID)
+  #   Endpoint: projects/{project_id}/branches/production/endpoints/primary
+  #             (endpoint_id: primary — READ_WRITE, autoscaling)
+  #
+  # The project_id is set via ${var.lakebase_project_id} — target-specific
+  # to ensure dev and production have isolated OLTP databases:
+  #   dev:     dev-matthew-giglia-sc-auditor
+  #   hls_fde: sc-auditor
+  #
+  # After first deploy of a new project, discover the database ID:
+  #   databricks postgres list-databases projects/{project_id}/branches/production
   #
   # To modify branch settings, use the Lakebase UI or CLI directly.
   # -------------------------------------------------------------------------

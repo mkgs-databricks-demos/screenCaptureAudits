@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/Card';
 import { StatusBadge } from '@/components/Badge';
-import { Input } from '@/components/Input';
 import { Select } from '@/components/Input';
 import { EmptyState } from '@/components/EmptyState';
 import { listAudits, type AuditSession } from '@/lib/api';

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'react-resizable-panels';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Input';
@@ -234,10 +234,7 @@ function ChatPanel({
               <p className="whitespace-pre-wrap">{msg.content}</p>
               {msg.tool_calls && (
                 <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
-                  {(Array.isArray(msg.tool_calls)
-                    ? msg.tool_calls
-                    : []
-                  ).map((tc: { name: string }, i: number) => (
+                  {(msg.tool_calls as Array<{ name: string }>).map((tc, i) => (
                     <span
                       key={i}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/10 text-xs font-mono"
@@ -351,23 +348,25 @@ export function AuditPage() {
       </div>
 
       {/* Split pane */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={60} minSize={30}>
+      <PanelGroup direction="horizontal" className="flex-1">
+        <Panel defaultSize={60} minSize={30}>
           <div className="h-full p-4 flex flex-col">
             <ScreenshotViewer screenshots={screenshots} />
           </div>
-        </ResizablePanel>
+        </Panel>
 
-        <ResizableHandle withHandle />
+        <PanelResizeHandle className="w-2 bg-[var(--border)] hover:bg-[var(--dbx-lava-600)] transition-colors flex items-center justify-center">
+          <div className="w-0.5 h-8 rounded-full bg-[var(--muted-foreground)] opacity-50" />
+        </PanelResizeHandle>
 
-        <ResizablePanel defaultSize={40} minSize={25}>
+        <Panel defaultSize={40} minSize={25}>
           <ChatPanel
             sessionId={sessionId}
             messages={messages}
             onNewMessage={handleNewMessage}
           />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }

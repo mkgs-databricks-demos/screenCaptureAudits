@@ -4,13 +4,16 @@ import type { ReactNode } from 'react';
 interface CardProps {
   children: ReactNode;
   className?: string;
+  elevated?: boolean;
 }
 
-export function Card({ children, className }: CardProps) {
+export function Card({ children, className, elevated }: CardProps) {
   return (
     <div
       className={cn(
-        'bg-[var(--card)] border border-[var(--border)] rounded-xl',
+        'bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl',
+        'transition-shadow duration-[var(--motion-normal)]',
+        elevated && 'shadow-md hover:shadow-lg',
         className
       )}
     >
@@ -19,14 +22,14 @@ export function Card({ children, className }: CardProps) {
   );
 }
 
-export function CardHeader({ children, className }: CardProps) {
+export function CardHeader({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('px-6 py-4 border-b border-[var(--border)]', className)}>
+    <div className={cn('px-6 py-4 border-b border-[var(--border-default)]', className)}>
       {children}
     </div>
   );
 }
 
-export function CardContent({ children, className }: CardProps) {
-  return <div className={cn('px-6 py-4', className)}>{children}</div>;
+export function CardContent({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn('px-6 py-5', className)}>{children}</div>;
 }

@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router';
+import { ThemeProvider } from '@/ThemeProvider';
 import { Navbar } from '@/components/Navbar';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { AuditPage } from '@/pages/audit/AuditPage';
@@ -8,11 +9,16 @@ import { SettingsPage } from '@/pages/settings/SettingsPage';
 
 function Layout() {
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col">
+    <div className="min-h-screen bg-[var(--surface-secondary)] flex flex-col transition-colors duration-[var(--motion-slow)]">
       <Navbar />
       <main className="flex-1">
         <Outlet />
       </main>
+      <footer className="border-t border-[var(--border-subtle)] py-3 px-6">
+        <p className="text-xs text-[var(--text-tertiary)] text-center">
+          SC Auditor &mdash; Powered by Databricks
+        </p>
+      </footer>
     </div>
   );
 }
@@ -32,5 +38,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
 }

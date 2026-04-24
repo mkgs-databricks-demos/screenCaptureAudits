@@ -3,11 +3,11 @@ import { cn } from '@/lib/utils';
 type Variant = 'default' | 'success' | 'warning' | 'error' | 'info';
 
 const variants: Record<Variant, string> = {
-  default: 'bg-[var(--muted)] text-[var(--muted-foreground)]',
-  success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  warning: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  error: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  info: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  default: 'bg-[var(--surface-tertiary)] text-[var(--text-secondary)]',
+  success: 'bg-[var(--accent-success-subtle)] text-[var(--accent-success)]',
+  warning: 'bg-[var(--accent-warning-subtle)] text-[var(--accent-warning)]',
+  error:   'bg-[var(--accent-error-subtle)] text-[var(--accent-error)]',
+  info:    'bg-[var(--accent-info-subtle)] text-[var(--accent-info)]',
 };
 
 const statusVariant: Record<string, Variant> = {
@@ -30,6 +30,7 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
     <span
       className={cn(
         'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+        'transition-colors duration-[var(--motion-fast)]',
         variants[variant],
         className
       )}

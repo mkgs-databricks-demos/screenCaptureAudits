@@ -15,15 +15,16 @@ import {
 } from '@/lib/api';
 import {
   Send,
-  Camera,
+  ScanSearch,
   Loader2,
   Bot,
   User,
   Wrench,
   ImageIcon,
+  Sparkles,
 } from 'lucide-react';
 
-// ---- New Audit Form ----
+// ── New Audit Form ──
 
 function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void }) {
   const [targetSystem, setTargetSystem] = useState('');
@@ -50,13 +51,14 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold mb-2">New Audit</h1>
-      <p className="text-[var(--muted-foreground)] mb-8">
+    <div className="max-w-2xl mx-auto px-6 py-12 animate-[fadeIn_var(--motion-normal)_var(--ease-out)]">
+      <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1.5">New Session</p>
+      <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">New Audit</h1>
+      <p className="text-[var(--text-secondary)] mb-8">
         Configure the target system and start an automated audit session.
       </p>
 
-      <Card>
+      <Card elevated>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
@@ -88,7 +90,7 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
               ]}
             />
             <div className="pt-2">
-              <Button type="submit" disabled={creating || !targetSystem.trim()}>
+              <Button type="submit" disabled={creating || !targetSystem.trim()} size="lg">
                 {creating && <Loader2 size={16} className="animate-spin" />}
                 {creating ? 'Creating...' : 'Start Audit'}
               </Button>
@@ -100,17 +102,18 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
   );
 }
 
-// ---- Screenshot Viewer ----
+// ── Screenshot Viewer ──
 
 function ScreenshotViewer({ screenshots }: { screenshots: string[] }) {
   const latest = screenshots.length > 0 ? screenshots[screenshots.length - 1] : null;
 
   if (!latest) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[var(--muted)] rounded-lg">
-        <div className="text-center text-[var(--muted-foreground)]">
+      <div className="flex-1 flex items-center justify-center bg-[var(--surface-tertiary)] rounded-xl border border-dashed border-[var(--border-default)]">
+        <div className="text-center text-[var(--text-tertiary)]">
           <ImageIcon size={48} className="mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Screenshots will appear here as the agent captures them</p>
+          <p className="text-sm font-medium">Screenshots will appear here</p>
+          <p className="text-xs mt-1 text-[var(--text-tertiary)]">as the agent captures them</p>
         </div>
       </div>
     );
@@ -118,7 +121,7 @@ function ScreenshotViewer({ screenshots }: { screenshots: string[] }) {
 
   return (
     <div className="flex-1 flex flex-col gap-2">
-      <div className="flex-1 bg-black rounded-lg overflow-hidden flex items-center justify-center">
+      <div className="flex-1 bg-[var(--dbx-navy-900)] rounded-xl overflow-hidden flex items-center justify-center shadow-inner">
         <img
           src={`data:image/png;base64,${latest}`}
           alt="Latest screenshot"
@@ -126,13 +129,13 @@ function ScreenshotViewer({ screenshots }: { screenshots: string[] }) {
         />
       </div>
       {screenshots.length > 1 && (
-        <div className="flex gap-1 overflow-x-auto py-1">
+        <div className="flex gap-1.5 overflow-x-auto py-1">
           {screenshots.map((s, i) => (
             <img
               key={i}
               src={`data:image/png;base64,${s}`}
               alt={`Screenshot ${i + 1}`}
-              className="h-12 w-20 object-cover rounded border border-[var(--border)] opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
+              className="h-14 w-22 object-cover rounded-lg border-2 border-[var(--border-default)] opacity-60 hover:opacity-100 hover:border-[var(--accent-primary)] cursor-pointer transition-all duration-[var(--motion-fast)]"
             />
           ))}
         </div>
@@ -141,7 +144,7 @@ function ScreenshotViewer({ screenshots }: { screenshots: string[] }) {
   );
 }
 
-// ---- Chat Panel ----
+// ── Chat Panel ──
 
 function ChatPanel({
   sessionId,
@@ -167,7 +170,6 @@ function ChatPanel({
     setInput('');
     setSending(true);
 
-    // Optimistically add user message
     const userMsg: AgentMessage = {
       id: `temp-${Date.now()}`,
       role: 'user',
@@ -205,39 +207,41 @@ function ChatPanel({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[var(--surface-secondary)]">
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-[var(--muted-foreground)] text-sm py-8">
-            <Bot size={32} className="mx-auto mb-2 opacity-40" />
-            <p>Send a message to start the audit agent.</p>
-            <p className="text-xs mt-1 opacity-70">
-              Try: "Navigate to the target system and log in"
+          <div className="text-center py-12 animate-[fadeIn_var(--motion-normal)_var(--ease-out)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[var(--dbx-lava-600)]/20">
+              <Sparkles size={24} className="text-white" />
+            </div>
+            <p className="text-sm font-medium text-[var(--text-primary)] mb-1">Ready to audit</p>
+            <p className="text-xs text-[var(--text-tertiary)] max-w-[200px] mx-auto">
+              Tell the agent what system to audit and how to navigate it.
             </p>
           </div>
         )}
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+          <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''} animate-[slideUp_var(--motion-fast)_var(--ease-out)]`}>
             {msg.role !== 'user' && (
-              <div className="w-7 h-7 rounded-full bg-[var(--dbx-lava-600)] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center flex-shrink-0 shadow-sm">
                 <Bot size={14} className="text-white" />
               </div>
             )}
             <div
-              className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                 msg.role === 'user'
-                  ? 'bg-[var(--dbx-navy-800)] text-white'
-                  : 'bg-[var(--muted)]'
+                  ? 'bg-[var(--dbx-navy-800)] text-white rounded-br-md'
+                  : 'bg-[var(--surface-raised)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-bl-md'
               }`}
             >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
               {Array.isArray(msg.tool_calls) && (
                 <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
                   {(msg.tool_calls as Array<{ name: string }>).map((tc, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/10 text-xs font-mono"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--accent-info-subtle)] text-[var(--accent-info)] text-xs font-mono"
                     >
                       <Wrench size={10} />
                       {tc.name}
@@ -254,11 +258,11 @@ function ChatPanel({
           </div>
         ))}
         {sending && (
-          <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-[var(--dbx-lava-600)] flex items-center justify-center">
+          <div className="flex gap-3 animate-[slideUp_var(--motion-fast)_var(--ease-out)]">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center">
               <Loader2 size={14} className="text-white animate-spin" />
             </div>
-            <div className="bg-[var(--muted)] rounded-xl px-4 py-2.5 text-sm text-[var(--muted-foreground)]">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-[var(--text-secondary)]">
               Agent is working...
             </div>
           </div>
@@ -266,13 +270,13 @@ function ChatPanel({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-[var(--border)]">
+      <form onSubmit={handleSend} className="p-4 border-t border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="flex gap-2">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Tell the agent what to audit..."
-            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--dbx-lava-600)]"
+            className="flex-1 rounded-xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:border-transparent transition-all duration-[var(--motion-fast)]"
             disabled={sending}
           />
           <Button type="submit" disabled={sending || !input.trim()} size="md">
@@ -284,7 +288,7 @@ function ChatPanel({
   );
 }
 
-// ---- Main Audit Page ----
+// ── Main Audit Page ──
 
 export function AuditPage() {
   const { sessionId: routeSessionId } = useParams();
@@ -293,7 +297,6 @@ export function AuditPage() {
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [screenshots, setScreenshots] = useState<string[]>([]);
 
-  // Load existing messages if resuming a session
   useEffect(() => {
     if (sessionId) {
       getMessages(sessionId)
@@ -307,13 +310,8 @@ export function AuditPage() {
     navigate(`/audit/${id}`, { replace: true });
   }
 
-  function handleNewMessage(
-    msg: AgentMessage,
-    toolCalls: ChatResponse['toolCallsMade']
-  ) {
+  function handleNewMessage(msg: AgentMessage, toolCalls: ChatResponse['toolCallsMade']) {
     setMessages((prev) => [...prev, msg]);
-
-    // Extract screenshots from tool calls
     for (const tc of toolCalls) {
       if (tc.name === 'take_screenshot') {
         const args = tc.arguments as { screenshot_base64?: string };
@@ -331,32 +329,32 @@ export function AuditPage() {
   return (
     <div className="h-[calc(100vh-56px)] flex flex-col">
       {/* Session header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--card)]">
+      <div className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="flex items-center gap-3">
-          <Camera size={16} className="text-[var(--dbx-lava-600)]" />
-          <span className="text-sm font-medium">Session: </span>
-          <code className="text-xs font-mono text-[var(--muted-foreground)]">
-            {sessionId}
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[var(--dbx-lava-600)] to-[var(--dbx-lava-700)] flex items-center justify-center">
+            <ScanSearch size={12} className="text-white" />
+          </div>
+          <span className="text-sm font-medium text-[var(--text-primary)]">Session</span>
+          <code className="text-xs font-mono text-[var(--text-tertiary)] bg-[var(--surface-tertiary)] px-2 py-0.5 rounded-md">
+            {sessionId.slice(0, 12)}...
           </code>
           <StatusBadge status="active" />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--muted-foreground)]">
-            {screenshots.length} screenshots
-          </span>
-        </div>
+        <span className="text-xs text-[var(--text-tertiary)] font-medium">
+          {screenshots.length} screenshots
+        </span>
       </div>
 
       {/* Split pane */}
       <PanelGroup direction="horizontal" className="flex-1">
         <Panel defaultSize={60} minSize={30}>
-          <div className="h-full p-4 flex flex-col">
+          <div className="h-full p-4 flex flex-col bg-[var(--surface-primary)]">
             <ScreenshotViewer screenshots={screenshots} />
           </div>
         </Panel>
 
-        <PanelResizeHandle className="w-2 bg-[var(--border)] hover:bg-[var(--dbx-lava-600)] transition-colors flex items-center justify-center">
-          <div className="w-0.5 h-8 rounded-full bg-[var(--muted-foreground)] opacity-50" />
+        <PanelResizeHandle className="w-1.5 bg-[var(--border-default)] hover:bg-[var(--accent-primary)] transition-colors duration-[var(--motion-fast)] flex items-center justify-center">
+          <div className="w-0.5 h-8 rounded-full bg-[var(--text-tertiary)] opacity-40" />
         </PanelResizeHandle>
 
         <Panel defaultSize={40} minSize={25}>

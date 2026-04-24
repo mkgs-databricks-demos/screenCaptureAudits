@@ -129,6 +129,10 @@ const TABLES_SQL = [
   `COMMENT ON COLUMN app.active_audit_workflows.pattern_id IS 'Navigation pattern being followed, if any'`,
 
   // ---- credential_references ----
+  // Note: The unique constraint uses COALESCE(user_id, '__shared__') so that
+  // NULL user_id (shared admin credentials) participates in uniqueness.
+  // PostgreSQL UNIQUE table constraints only accept plain columns, so we
+  // use a CREATE UNIQUE INDEX with an expression instead.
   `CREATE TABLE IF NOT EXISTS app.credential_references (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id VARCHAR(255),
@@ -146,9 +150,10 @@ const TABLES_SQL = [
     is_admin_managed BOOLEAN DEFAULT false,
     created_by VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(COALESCE(user_id, '__shared__'), target_system, credential_source)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_credential_unique
+    ON app.credential_references (COALESCE(user_id, '__shared__'), target_system, credential_source)`,
   `COMMENT ON TABLE app.credential_references IS 'References to credentials for target system authentication. NEVER stores actual secrets.'`,
   `COMMENT ON COLUMN app.credential_references.user_id IS 'Owning user. NULL for shared admin-managed M2M credentials.'`,
   `COMMENT ON COLUMN app.credential_references.credential_source IS 'Where credentials are stored: secret_scope or uc_connection'`,

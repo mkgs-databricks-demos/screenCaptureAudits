@@ -4,11 +4,10 @@
  * Provides access to generated audit reports stored in UC.
  */
 import type { AppKitServer } from '@databricks/appkit';
+import type { Express } from 'express';
 import { generateAuditReport } from '../services/report-generator.js';
 
-export async function setupReportRoutes(appkit: AppKitServer): Promise<void> {
-  const app = appkit.server.expressApp;
-
+export function setupReportRoutes(appkit: AppKitServer, app: Express): void {
   // List reports for a session
   app.get('/api/reports/:sessionId', async (req, res) => {
     try {

@@ -5,11 +5,11 @@
  * in both Lakebase (operational) and UC (analytical).
  */
 import type { AppKitServer } from '@databricks/appkit';
+import type { Express } from 'express';
 import { v4 as uuid } from 'uuid';
 
-export async function setupScreenshotRoutes(appkit: AppKitServer): Promise<void> {
+export function setupScreenshotRoutes(appkit: AppKitServer, app: Express): void {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
 
   // Upload a screenshot (called by the agent after take_screenshot)
   app.post('/api/screenshots', async (req, res) => {

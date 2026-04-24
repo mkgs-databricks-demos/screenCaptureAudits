@@ -2,6 +2,7 @@
  * Agent chat routes — SSE streaming for the agent loop.
  */
 import type { AppKitServer } from '@databricks/appkit';
+import type { Express } from 'express';
 import { AuditorAgent } from '../agent/auditor-agent.js';
 import { BrowserController } from '../plugins/browser-agent/browser-controller.js';
 import type { AgentContext } from '../agent/types.js';
@@ -9,8 +10,7 @@ import type { AgentContext } from '../agent/types.js';
 // Active agent sessions keyed by session ID
 const activeAgents = new Map<string, { agent: AuditorAgent; browser: BrowserController }>();
 
-export async function setupAgentRoutes(appkit: AppKitServer): Promise<void> {
-  const app = appkit.server.expressApp;
+export function setupAgentRoutes(appkit: AppKitServer, app: Express): void {
   const pool = appkit.lakebase.pool;
 
   // Send a message to the agent

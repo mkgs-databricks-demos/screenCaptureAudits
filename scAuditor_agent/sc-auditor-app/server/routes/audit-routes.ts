@@ -2,11 +2,11 @@
  * Audit session CRUD routes.
  */
 import type { AppKitServer } from '@databricks/appkit';
+import type { Express } from 'express';
 import { v4 as uuid } from 'uuid';
 
-export async function setupAuditRoutes(appkit: AppKitServer): Promise<void> {
+export function setupAuditRoutes(appkit: AppKitServer, app: Express): void {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
 
   // Create a new audit session
   app.post('/api/audits', async (req, res) => {

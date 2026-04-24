@@ -131,8 +131,8 @@ targets:
       client_id_dbs_key: client_id_dev_matthew_giglia_${var.schema}
       client_secret_dbs_key: client_secret_dev_matthew_giglia_${var.schema}
       # Lakebase branch/database IDs — update after first infra deploy
-      postgres_branch: projects/sc-auditor/branches/production
-      postgres_database: projects/sc-auditor/branches/production/databases/databricks_postgres
+      postgres_branch: projects/dev-matthew-giglia-sc-auditor/branches/production
+      postgres_database: projects/dev-matthew-giglia-sc-auditor/branches/production/databases/TBD_AFTER_FIRST_DEPLOY
 
   # ── hls_fde (production — same workspace as dev) ────────────────────────
   hls_fde:
@@ -159,7 +159,7 @@ targets:
       client_id_dbs_key: client_id_${var.schema}
       client_secret_dbs_key: client_secret_${var.schema}
       postgres_branch: projects/sc-auditor/branches/production
-      postgres_database: projects/sc-auditor/branches/production/databases/databricks_postgres
+      postgres_database: projects/sc-auditor/branches/production/databases/db-tcbk-ln6y1dmkax
     permissions:
       - user_name: matthew.giglia@databricks.com
         level: CAN_MANAGE

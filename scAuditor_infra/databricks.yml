@@ -131,6 +131,7 @@ targets:
       run_as_user: matthew.giglia@databricks.com
       client_id_dbs_key: client_id_dev_matthew_giglia_${var.schema}
       client_secret_dbs_key: client_secret_dev_matthew_giglia_${var.schema}
+      lakebase_project_id: dev-matthew-giglia-sc-auditor
 
   # ── hls_fde (production — same workspace as dev) ────────────────────────
   hls_fde:

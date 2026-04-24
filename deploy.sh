@@ -181,7 +181,7 @@ resolve_infra_vars() {
   log "Resolving infrastructure variables (target: ${TARGET})"
 
   local summary_json
-  summary_json=$(cd "${bundle_dir}" && databricks bundle summary --target "${TARGET}" --output json 2>&1) || {
+  summary_json=$(cd "${bundle_dir}" && databricks bundle summary --target "${TARGET}" --output json) || {
     fail "Could not read bundle summary for ${INFRA_BUNDLE}.\n" \
          "  Deploy the infra bundle first:\n" \
          "    cd ${bundle_dir} && databricks bundle deploy --target ${TARGET}"
@@ -229,14 +229,15 @@ if not catalog:
 if not schema:
     schema = get_var('schema')
 
-# --- lakebase_project_id (from postgres_projects resource) ---
-project_id = ''
-pg_projects = resources.get('postgres_projects', {})
-for proj_name, proj in pg_projects.items():
-    if isinstance(proj, dict):
-        project_id = proj.get('project_id', '')
-        if project_id:
-            break
+# --- lakebase_project_id (prefer variable, fall back to resource) ---
+project_id = get_var('lakebase_project_id')
+if not project_id:
+    pg_projects = resources.get('postgres_projects', {})
+    for proj_name, proj in pg_projects.items():
+        if isinstance(proj, dict):
+            project_id = proj.get('project_id', '')
+            if project_id:
+                break
 
 # Sanitise for shell eval safety (strip anything not alphanumeric/underscore/dash/dot)
 import re
@@ -318,7 +319,7 @@ check_lakebase_status() {
 
   # Verify the project is accessible
   local project_json
-  project_json=$(databricks postgres get-project "${project_id}" --output json 2>&1) || {
+  project_json=$(databricks postgres get-project "${project_id}" --output json) || {
     warn "Lakebase project '${project_id}' not found or not accessible."
     warn "If the project was just created, it may still be initializing."
     return 0
@@ -327,7 +328,7 @@ check_lakebase_status() {
 
   # List endpoints on the production branch
   local endpoints_json
-  endpoints_json=$(databricks postgres list-endpoints "projects/${project_id}/branches/production" --output json 2>&1) || {
+  endpoints_json=$(databricks postgres list-endpoints "projects/${project_id}/branches/production" --output json) || {
     warn "Could not list endpoints for project '${project_id}' branch 'production'."
     warn "The branch or endpoint may still be initializing."
     return 0
@@ -399,7 +400,7 @@ verify_infra_readiness() {
 
   # ---- 1. Secret scope keys -----------------------------------------------
   local secrets_json
-  secrets_json=$(databricks secrets list-secrets --scope "${SCOPE_NAME}" --output json 2>&1) || {
+  secrets_json=$(databricks secrets list-secrets "${SCOPE_NAME}" --output json) || {
     echo ""
     echo "  Secret scope '${SCOPE_NAME}' not found or not accessible."
     echo "  The UC setup job must run first to create the SPN and populate secrets:"
@@ -415,8 +416,11 @@ verify_infra_readiness() {
   present_keys=$(echo "${secrets_json}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
-for s in data.get('secrets', []):
-    print(s.get('key', ''))
+# Handle both formats: REST API {'secrets': [...]} and CLI bare array [...]
+secrets = data.get('secrets', data) if isinstance(data, dict) else data
+for s in secrets:
+    if isinstance(s, dict):
+        print(s.get('key', ''))
 " 2>/dev/null) || fail "Could not parse secrets list from scope '${SCOPE_NAME}'."
 
   local missing_auto=()
@@ -492,9 +496,8 @@ for s in data.get('secrets', []):
     echo "     • Databricks CLI: databricks account service-principal-secrets create <sp_id>"
     echo ""
     echo "  2. Store it in the secret scope:"
-    echo "     databricks secrets put-secret \\"
-    echo "       --scope ${SCOPE_NAME} \\"
-    echo "       --key ${CLIENT_SECRET_DBS_KEY} \\"
+    echo "     databricks secrets put-secret ${SCOPE_NAME} \\"
+    echo "       ${CLIENT_SECRET_DBS_KEY} \\"
     echo '       --string-value "<secret>"'
     echo ""
     echo "  Use --skip-checks to deploy the app bundle without this key."

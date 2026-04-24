@@ -70,9 +70,10 @@ CLUSTER BY AUTO
 COMMENT 'Top-level audit session tracking. One row per audit session regardless of target system.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
   'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
@@ -100,9 +101,10 @@ CLUSTER BY AUTO
 COMMENT 'Screenshot evidence captured during audit sessions. Each row represents one browser screenshot with metadata and Volume storage path.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
   'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
@@ -128,9 +130,10 @@ CLUSTER BY AUTO
 COMMENT 'Information extracted from screenshots via ai_parse_document. Each row is one extraction pass against a screenshot.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
   'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
@@ -158,9 +161,10 @@ CLUSTER BY AUTO
 COMMENT 'Individual findings or observations recorded during an audit. Findings may be linked to specific screenshots and extractions.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
   'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
@@ -187,9 +191,10 @@ CLUSTER BY AUTO
 COMMENT 'Generated audit report packages. Each row tracks a report file stored in a UC Volume.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
   'quality' = 'silver',
   'pipeline' = 'sc_auditor'
 );
@@ -215,12 +220,13 @@ CLUSTER BY AUTO
 COMMENT 'Registry of target systems that have been audited. Used for analytics, pattern grouping, and system discovery.'
 TBLPROPERTIES (
   'delta.enableChangeDataFeed' = 'true',
-  'delta.feature.variantType-preview' = 'supported',
-  'delta.minReaderVersion' = '3',
-  'delta.minWriterVersion' = '7',
+  'delta.enableDeletionVectors' = 'true',
+  'delta.enableRowTracking' = 'true',
+  'delta.enableTypeWidening' = 'true',
+  'delta.enableVariantShredding' = 'true',
+  'delta.feature.allowColumnDefaults' = 'supported',
   'quality' = 'silver',
-  'pipeline' = 'sc_auditor',
-  'delta.feature.allowColumnDefaults' = 'supported'
+  'pipeline' = 'sc_auditor'
 );
 
 -- COMMAND ----------

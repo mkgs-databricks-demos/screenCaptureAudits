@@ -79,8 +79,8 @@ databricks bundle run sc_auditor_uc_setup --target dev
 After the setup job completes, provision the client secret (one-time admin step):
 
 ```bash
-databricks secrets put-secret --scope sc_auditor_credentials \
-  --key client_secret_dev_matthew_giglia_sc_auditor --string-value "<secret>"
+databricks secrets put-secret sc_auditor_credentials \
+  client_secret_dev_matthew_giglia_sc_auditor --string-value "<secret>"
 ```
 
 ## Conventions

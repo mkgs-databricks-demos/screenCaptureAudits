@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 
 export async function setupAuditRoutes(appkit: AppKitServer): Promise<void> {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
 
   // Create a new audit session
   app.post('/api/audits', async (req, res) => {

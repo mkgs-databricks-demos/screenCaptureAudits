@@ -10,7 +10,7 @@ import type { AgentContext } from '../agent/types.js';
 const activeAgents = new Map<string, { agent: AuditorAgent; browser: BrowserController }>();
 
 export async function setupAgentRoutes(appkit: AppKitServer): Promise<void> {
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
   const pool = appkit.lakebase.pool;
 
   // Send a message to the agent

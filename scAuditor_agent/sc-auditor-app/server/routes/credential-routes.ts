@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid';
 
 export async function setupCredentialRoutes(appkit: AppKitServer): Promise<void> {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
 
   // List credential references for current user (includes shared admin-managed)
   app.get('/api/credentials', async (req, res) => {

@@ -5,7 +5,7 @@ import type { AppKitServer } from '@databricks/appkit';
 
 export async function setupPatternRoutes(appkit: AppKitServer): Promise<void> {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
 
   // List patterns (optionally filtered by target system)
   app.get('/api/patterns', async (req, res) => {

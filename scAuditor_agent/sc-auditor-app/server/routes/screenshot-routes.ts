@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 
 export async function setupScreenshotRoutes(appkit: AppKitServer): Promise<void> {
   const pool = appkit.lakebase.pool;
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
 
   // Upload a screenshot (called by the agent after take_screenshot)
   app.post('/api/screenshots', async (req, res) => {

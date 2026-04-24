@@ -7,7 +7,7 @@ import type { AppKitServer } from '@databricks/appkit';
 import { generateAuditReport } from '../services/report-generator.js';
 
 export async function setupReportRoutes(appkit: AppKitServer): Promise<void> {
-  const app = appkit.server.expressApp;
+  const app = appkit.server.app;
 
   // List reports for a session
   app.get('/api/reports/:sessionId', async (req, res) => {

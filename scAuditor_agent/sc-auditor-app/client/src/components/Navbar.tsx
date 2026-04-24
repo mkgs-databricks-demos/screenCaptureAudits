@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router';
 import { ThemeSelector } from '@/ThemeProvider';
-import { BRAND_DIAMOND_WHITE } from '@/lib/brand';
+import { ICON_AGENT_BRICKS_CONTAINER } from '@/lib/brand';
 import {
   LayoutDashboard,
   ScanSearch,
@@ -23,13 +23,15 @@ export function Navbar() {
       {/* Left: Logo + Nav */}
       <div className="flex items-center gap-8">
         {/* Brand mark */}
-        <div className="flex items-center gap-3 py-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-primary-hover)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent-primary)]/20">
-            <img src={BRAND_DIAMOND_WHITE} alt="Databricks" className="w-5 h-5" />
-          </div>
+        <div className="flex items-center gap-4 -my-3">
+          <img
+            src={ICON_AGENT_BRICKS_CONTAINER}
+            alt="SC Auditor"
+            className="w-[120px] h-[120px] rounded-2xl drop-shadow-xl"
+          />
           <div className="flex flex-col">
-            <span className="font-bold text-base tracking-tight leading-none">SC Auditor</span>
-            <span className="text-[10px] text-white/50 font-medium tracking-widest uppercase leading-none mt-0.5">Screen Capture</span>
+            <span className="font-bold text-lg tracking-tight leading-none">SC Auditor</span>
+            <span className="text-[10px] text-white/50 font-medium tracking-widest uppercase leading-none mt-1">Screen Capture</span>
           </div>
         </div>
 

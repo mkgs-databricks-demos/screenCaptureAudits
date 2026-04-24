@@ -8,7 +8,7 @@
 
 ### Summary
 
-Continuation of the frontend brand refresh session. Completed all 5 remaining page components (Dashboard, Audit, History, Patterns, Settings) with Databricks brand CDN icons, semantic token fixes, and consistent typography hierarchy. Created a shared brand constants module. Diagnosed a TS build failure via OTel logs and fixed it. Then completed final cleanup: eliminated all remaining legacy `--dbx-*` variable references from component files, implemented the missing high-contrast CSS rules, increased navbar link hit targets, and reordered Settings page sections. Successfully deployed the app across 4 deployment cycles.
+Continuation of the frontend brand refresh session. Completed all 5 remaining page components (Dashboard, Audit, History, Patterns, Settings) with Databricks brand CDN icons, semantic token fixes, and consistent typography hierarchy. Created a shared brand constants module. Diagnosed a TS build failure via OTel logs and fixed it. Then completed final cleanup: eliminated all remaining legacy `--dbx-*` variable references from component files, implemented the missing high-contrast CSS rules, increased navbar link hit targets, and reordered Settings page sections. Added the Databricks Apps favicon, enhanced Input/Select components with leading icon support, and enriched the Audit page form with field icons and contextual audit type hints. Swapped the navbar brand mark from the diamond to the Agent Bricks Container icon, then scaled it through three iterations to a 120px hero-sized brand mark. Conducted a comprehensive icon audit across all files — confirmed all 30 lucide icons should remain (brand UI icons are hardcoded `#FF3621`, can't adapt to themes). Successfully deployed the app across 10 deployment cycles.
 
 ---
 
@@ -169,7 +169,7 @@ Increased navbar link padding in two iterations based on user feedback:
 | Inter-link gap | `gap-0.5` | `gap-1` | `gap-1` |
 | Icon-label gap | `gap-2` | `gap-2` | `gap-2.5` |
 
-Final minimum hit target height: ~48px (meets WCAG 2.5.8 Target Size minimum). The right-side theme selector was intentionally left unchanged.
+Final minimum hit target height: \~48px (meets WCAG 2.5.8 Target Size minimum). The right-side theme selector was intentionally left unchanged.
 
 ---
 
@@ -183,6 +183,158 @@ Moved the **Appearance** section (theme selector + high-contrast toggle) from th
 
 ---
 
+### Favicon — Databricks Apps Icon
+
+**Problem:** The browser tab showed a generic globe icon (default Vite favicon). The `index.html` referenced `/favicon.svg` but no file existed in `client/public/`.
+
+**Solution:** Created `client/public/favicon.svg` with the official **Databricks Apps** product icon — the four geometric shapes (square, circle, arch, triangle) in Lava tones.
+
+**SVG source:** Downloaded from brand CDN (`apps-icon-full-color.svg`) and saved locally. The SVG contains four paths:
+- Pink square and arch (`#FABFBA` — Lava 300)
+- Orange circle and triangle (`#FF5F46` — Lava 500)
+
+**Why local instead of CDN?** The `workspaceUpdateFile` safety filter blocked external CDN URLs in the `<link>` tag href. Since `index.html` already referenced `/favicon.svg` (Vite's convention for serving from `public/`), creating the local file required zero HTML changes.
+
+**Icon choice:** User requested the Databricks Apps icon (matches the icon shown in the Databricks workspace app list), sourced from the brand asset catalog: `Filename: apps-icon-full-color.svg`, `CDN: cdn.bfldr.com/9AYANS2F/at/4qkmxq28mpg8t89hrp7mb7/`.
+
+---
+
+### Input/Select Components — Leading Icon Support
+
+**File:** `client/src/components/Input.tsx`
+
+Added an optional `icon` prop (`ReactNode`) to both the `Input` and `Select` components:
+
+```tsx
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  icon?: ReactNode;  // ← new
+}
+```
+
+**Implementation:**
+- Wrapped `<input>` / `<select>` in a `relative` div
+- Icon renders `absolute left-3 top-1/2 -translate-y-1/2` with `pointer-events-none`
+- When icon is present: `pl-10 pr-3`; when absent: `px-3` (backward-compatible)
+- Added `w-full` to both input and select for consistent width in the relative wrapper
+
+---
+
+### Audit Page — Form Icons and Type Hints
+
+**File:** `client/src/pages/audit/AuditPage.tsx`
+
+Enhanced the `NewAuditForm` with visual affordances:
+
+**1. Page header brand mark:**
+- Databricks diamond (`BRAND_DIAMOND`) at 40×40px alongside the "New Audit" heading
+- Description text indented `ml-[52px]` to align under the heading (clearing the icon)
+
+**2. Form field leading icons:**
+
+| Field | Icon | Lucide Component |
+| --- | --- | --- |
+| Target System | Server rack | `Server` (16px) |
+| Target URL | Globe | `Globe` (16px) |
+| Audit Type | Clipboard | `ClipboardList` (16px) |
+
+Uses the new `icon` prop on `Input` and `Select` components.
+
+**3. Start Audit button icon:**
+- `ScanSearch` icon when idle (replaces bare text)
+- `Loader2` spinner when creating (existing behavior)
+
+**4. Audit type hint bar:**
+When the user selects an audit type from the dropdown, a contextual hint appears below with a type-specific icon and description:
+
+| Audit Type | Icon | Color Token | Description |
+| --- | --- | --- | --- |
+| Claims | `FileBarChart` | `--accent-primary` | Reviews claim submissions, adjudication logic, and payment accuracy |
+| Compliance | `Shield` | `--accent-info` | Checks regulatory adherence, access controls, and audit trails |
+| Security | `Shield` | `--accent-warning` | Assesses authentication, authorization, and data exposure risks |
+| Data Quality | `ScanSearch` | `--accent-success` | Validates data completeness, consistency, and transformation correctness |
+| Financial | `CircleDollarSign` | `--accent-primary` | Examines transaction records, reconciliation, and financial controls |
+| Custom | `Cog` | `--text-tertiary` | Flexible audit — describe what to check in the chat |
+
+The hint bar uses `animate-[fadeIn_var(--motion-fast)_var(--ease-out)]` for a smooth entrance when the selection changes.
+
+**New lucide imports added:** `Server`, `Globe`, `ClipboardList`, `Shield`, `FileBarChart`, `CircleDollarSign`, `Cog`.
+
+---
+
+### Navbar Brand Mark — Agent Bricks Swap + Scale
+
+**Problem:** The navbar brand mark used the Databricks diamond (`BRAND_DIAMOND_WHITE`) inside a gradient accent div. Since every page header also uses the diamond as a brand anchor, the navbar lacked visual differentiation.
+
+**Solution:** Replaced the diamond + gradient-div pattern with the self-contained **Agent Bricks Container** icon (`ICON_AGENT_BRICKS_CONTAINER`), then scaled it through three iterations to 120px hero size for maximum visual impact.
+
+**Evolution:**
+
+| Pass | Icon | Size | Wrapper |
+| --- | --- | --- | --- |
+| Original | `BRAND_DIAMOND_WHITE` | `w-5 h-5` icon in `w-9 h-9` gradient div | Gradient `<div>` + `<img>` |
+| Pass 1 | `ICON_AGENT_BRICKS_CONTAINER` | `w-10 h-10` (40px) | Single `<img>` |
+| Pass 2 | `ICON_AGENT_BRICKS_CONTAINER` | `w-[60px] h-[60px]` (60px) | Single `<img>`, `py-1.5` wrapper |
+| Pass 3 (final) | `ICON_AGENT_BRICKS_CONTAINER` | `w-[120px] h-[120px]` (120px) | Single `<img>`, `-my-3` negative margin, `rounded-2xl` |
+
+**Final markup:**
+```tsx
+<img src={ICON_AGENT_BRICKS_CONTAINER} alt="SC Auditor" className="w-[120px] h-[120px] rounded-2xl drop-shadow-xl" />
+```
+
+**Why 120px:** User iterated from 40px → 60px (1.5×) → 120px (2×), wanting the brand mark to "feel special" and be at least as tall as the navbar menu items. At 120px the icon is a hero element — taller than the nav links (~48px) — establishing clear visual hierarchy. Uses `-my-3` negative margin to let the icon overflow the navbar's natural height without adding padding. The `rounded-xl` was upgraded to `rounded-2xl` and `drop-shadow-lg` to `drop-shadow-xl` to match the larger scale. Title text bumped from `text-base` to `text-lg` with `gap-4` for proportional spacing. All nav links and the theme selector remain unchanged.
+
+**Why Agent Bricks Container:**
+- The app IS an AI agent — Agent Bricks is the correct product identity
+- The container version brings its own white rounded background — stands out on the dark navbar without needing a custom wrapper div
+- Visually distinct from the diamond used on every page header
+- Simplified markup (single `<img>` vs. nested `<div>` + `<img>`)
+
+---
+
+### Icon Audit — Full Application Review
+
+Conducted a comprehensive audit of every icon across all 7 component/page files. Scanned all `.tsx`/`.ts` files for `lucide-react` imports and `@/lib/brand` imports, then mapped every usage to its rendering context (color, size, theme behavior).
+
+**Inventory totals:**
+- **30 unique lucide icons** — 56 total usages across 7 files
+- **7 brand CDN icon usages** — 4 constants across 7 files (BRAND_DIAMOND, ICON_AGENT_BRICKS, ICON_LAKEBASE, ICON_AGENT_BRICKS_CONTAINER)
+
+**Brand catalog findings:**
+- 320 UI system icons in the brandfolder (`*Icon.svg`) — all 16×16 viewBox, designed for small UI contexts
+- **Critical:** Every single one uses hardcoded `fill="#FF3621"` (Lava 600) — none use `currentColor`
+- This means they cannot: adapt to dark/light themes, inherit `text-white` or `text-tertiary`, or render in non-red colors (green for success, blue for info, yellow for warning)
+
+**Three-tier icon architecture (confirmed):**
+
+| Tier | Source | Color Behavior | Use For |
+| --- | --- | --- | --- |
+| Product icons | Brand CDN (multi-color SVG) | Fixed multi-color | Brand identity — app logo, section headers, feature callouts |
+| UI system icons | Brand CDN (16×16 Lava) | Hardcoded `#FF3621` | Accent-only decorative contexts where red is always correct |
+| Lucide React | `currentColor` components | Inherits from parent | All functional UI — nav, actions, status, indicators, form fields |
+
+**Verdict:** All 30 lucide icons should remain. The current architecture — product icons for identity, lucide for functional UI — is the correct design. Key reasons:
+
+1. **Theme adaptivity** — Icons like `Shield` render in blue (`--accent-info`), yellow (`--accent-warning`), and white contexts. A permanently-red brand icon would break semantic meaning.
+2. **`currentColor` inheritance** — Navbar icons shift between `text-white/60` (inactive) and `text-white` (active). Brand icons can't do this.
+3. **Animated icons** — `Loader2` uses `animate-spin` + dynamic color. No brand equivalent.
+4. **Consistency** — Mixing hardcoded-red brand icons with theme-adaptive lucide icons would create visual inconsistency.
+
+**Files scanned:**
+
+| File | Lucide Count | Brand Count |
+| --- | --- | --- |
+| ThemeProvider.tsx | 4 (Sun, Moon, Monitor, Accessibility) | 0 |
+| Navbar.tsx | 5 (LayoutDashboard, ScanSearch, ClipboardList, Route, Settings) | 1 (ICON_AGENT_BRICKS_CONTAINER) |
+| AuditPage.tsx | 13 (Send, ScanSearch, Loader2, User, Wrench, ImageIcon, Server, Globe, ClipboardList, Shield, FileBarChart, CircleDollarSign, Cog) | 2 (ICON_AGENT_BRICKS, BRAND_DIAMOND) |
+| DashboardPage.tsx | 7 (ScanSearch, ClipboardCheck, FileSearch, AlertTriangle, Plus, ArrowRight, Monitor) | 1 (BRAND_DIAMOND) |
+| HistoryPage.tsx | 2 (ClipboardCheck, Search) | 1 (BRAND_DIAMOND) |
+| PatternsPage.tsx | 13 (Route, ChevronDown, ChevronRight, Save, Trash2, GripVertical, Camera, MousePointer, Type, ArrowRight, Check, X, Loader2) | 1 (BRAND_DIAMOND) |
+| SettingsPage.tsx | 12 (KeyRound, Shield, Plus, Trash2, X, Database, Sun, Moon, Monitor, Accessibility, Palette, Loader2) | 3 (BRAND_DIAMOND, ICON_LAKEBASE, ICON_AGENT_BRICKS) |
+
+---
+
 ### Deployment History
 
 | # | Result | Cause |
@@ -191,6 +343,12 @@ Moved the **Appearance** section (theme selector + high-contrast toggle) from th
 | 2 | SUCCESS | Fixed unused imports |
 | 3 | SUCCESS | Legacy var cleanup in ThemeProvider + Navbar |
 | 4 | SUCCESS | High contrast CSS, taller nav links, Settings reorder |
+| 5 | SUCCESS | Databricks diamond favicon, Input/Select icon prop, Audit page form icons |
+| 6 | SUCCESS | Favicon swapped to Databricks Apps icon (geometric shapes) per user feedback |
+| 7 | SUCCESS | Navbar brand mark swap: diamond → Agent Bricks Container (40px) |
+| 8 | SUCCESS | Post icon-audit deployment (no code changes — audit was read-only) |
+| 9 | SUCCESS | Navbar brand mark scaled 1.5× to 60px, wrapper padding reduced to `py-1.5` |
+| 10 | SUCCESS | Navbar brand mark scaled 2× to 120px hero size, negative margin, rounded-2xl, drop-shadow-xl |
 
 ---
 
@@ -222,7 +380,17 @@ Schema also contains 6 analytical tables (`audit_sessions`, `audit_screenshots`,
 
 6. **High contrast as tint-stop shifts** — Rather than introducing new non-brand colors, the high-contrast mode shifts each semantic token to an adjacent stop in the brand palette (e.g., Lava 600 → 700 in light, → 400 in dark). This maintains brand integrity while meaningfully increasing contrast ratios.
 
-7. **48px navbar hit targets** — Final `py-3.5 px-5` gives a ~48px minimum touch target, meeting WCAG 2.5.8. The theme selector remains compact since it's a secondary control.
+7. **48px navbar hit targets** — Final `py-3.5 px-5` gives a \~48px minimum touch target, meeting WCAG 2.5.8. The theme selector remains compact since it's a secondary control.
+
+8. **Databricks Apps icon as favicon** — User requested the multi-shape icon (square, circle, arch, triangle) from the Databricks workspace app list rather than the diamond symbol. Saved locally in `public/favicon.svg` to avoid CDN-in-HTML safety filter issues. The four geometric shapes in Lava 300/500 are more distinctive at 16×16px favicon sizes than the detailed diamond paths.
+
+9. **Audit type hint bar over static descriptions** — Instead of adding helper text permanently under each audit type option, the hint only appears when a type is selected. This keeps the form clean (Distilled) while providing contextual guidance. Each hint has a type-specific icon color-coded to the audit's nature (warning for security, info for compliance, etc.).
+
+10. **Reusable icon prop on Input/Select** — Added to the shared component rather than wrapping inputs inline in AuditPage. This makes the icon pattern available to all forms (Settings page, future pages) without code duplication.
+
+11. **Agent Bricks Container as navbar hero brand mark at 120px** — Since the diamond is the page-level brand anchor (used on all 5 page headers), the navbar needed its own visual identity. The Agent Bricks Container is thematically correct (the app IS an AI agent), self-contained (brings its own white background), and simplified the markup from a nested div+img to a single `<img>`. Iterated through 40px → 60px → 120px per user feedback — the final 120px makes the brand mark a hero element that towers over the nav links, establishing clear visual hierarchy. Uses `-my-3` negative margin overflow instead of padding to avoid inflating the navbar.
+
+12. **Lucide for all functional icons (confirmed by audit)** — The brand catalog has 320 UI system icons at 16×16, but every one uses hardcoded `#FF3621` fill — no `currentColor` support. Since the app uses icons in 6+ color contexts (white, tertiary, info-blue, warning-yellow, success-green, accent-primary) and relies on theme-adaptive `currentColor` inheritance, the brand UI icons are architecturally incompatible. The three-tier model (product icons for identity, lucide for functional UI) is the correct long-term architecture.
 
 ---
 
@@ -231,13 +399,15 @@ Schema also contains 6 analytical tables (`audit_sessions`, `audit_screenshots`,
 | File | Change |
 | --- | --- |
 | `client/src/lib/brand.ts` | **New** — 8 CDN icon URL constants |
+| `client/public/favicon.svg` | **New** — Databricks Apps icon (4 geometric shapes, Lava 300/500) |
+| `client/src/components/Input.tsx` | Added `icon` ReactNode prop to Input and Select with leading-icon positioning |
 | `client/src/pages/dashboard/DashboardPage.tsx` | Added diamond brand mark to hero header |
-| `client/src/pages/audit/AuditPage.tsx` | Replaced all `--dbx-*` vars, Agent Bricks bot avatar, diamond empty state |
+| `client/src/pages/audit/AuditPage.tsx` | Replaced all `--dbx-*` vars, Agent Bricks bot avatar, diamond empty state, form field icons, ScanSearch on button, audit type hint bar |
 | `client/src/pages/history/HistoryPage.tsx` | Added diamond to page header |
 | `client/src/pages/patterns/PatternsPage.tsx` | Fixed step numbers to `--accent-primary`, diamond in header, consolidated imports |
 | `client/src/pages/settings/SettingsPage.tsx` | Lakebase + Agent Bricks section icons, diamond in header, removed unused imports, reordered sections (Appearance → bottom) |
 | `client/src/ThemeProvider.tsx` | Replaced `--dbx-blue-400`/`--dbx-navy-900` with `--accent-info`/`text-white` |
-| `client/src/components/Navbar.tsx` | Replaced `--dbx-lava-*` gradient with `--accent-primary`/`--accent-primary-hover`, added `BRAND_DIAMOND_WHITE`, increased link padding to `py-3.5 px-5` |
+| `client/src/components/Navbar.tsx` | Replaced gradient+diamond with `ICON_AGENT_BRICKS_CONTAINER` at 120px hero size, `-my-3` overflow, `rounded-2xl`, increased link padding to `py-3.5 px-5` |
 | `client/src/index.css` | Added `.high-contrast` (light) and `.dark.high-contrast` (dark) CSS rule blocks — 54 lines of token overrides |
 
 ### Assistant Instruction Added

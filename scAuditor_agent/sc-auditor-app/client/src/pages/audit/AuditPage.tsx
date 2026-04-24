@@ -21,7 +21,25 @@ import {
   User,
   Wrench,
   ImageIcon,
+  Server,
+  Globe,
+  ClipboardList,
+  Shield,
+  FileBarChart,
+  CircleDollarSign,
+  Cog,
 } from 'lucide-react';
+
+// ── Audit Type Icons ──
+
+const AUDIT_TYPE_ICONS: Record<string, React.ReactNode> = {
+  claims: <FileBarChart size={14} className="text-[var(--accent-primary)]" />,
+  compliance: <Shield size={14} className="text-[var(--accent-info)]" />,
+  security: <Shield size={14} className="text-[var(--accent-warning)]" />,
+  data_quality: <ScanSearch size={14} className="text-[var(--accent-success)]" />,
+  financial: <CircleDollarSign size={14} className="text-[var(--accent-primary)]" />,
+  custom: <Cog size={14} className="text-[var(--text-tertiary)]" />,
+};
 
 // ── New Audit Form ──
 
@@ -51,9 +69,18 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12 animate-[fadeIn_var(--motion-normal)_var(--ease-out)]">
-      <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-1.5">New Session</p>
-      <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">New Audit</h1>
-      <p className="text-[var(--text-secondary)] mb-8">
+      <div className="flex items-center gap-3 mb-1.5">
+        <img
+          src={BRAND_DIAMOND}
+          alt=""
+          className="w-10 h-10 opacity-90 drop-shadow-sm"
+        />
+        <div>
+          <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-widest mb-0.5">New Session</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">New Audit</h1>
+        </div>
+      </div>
+      <p className="text-[var(--text-secondary)] mb-8 ml-[52px]">
         Configure the target system and start an automated audit session.
       </p>
 
@@ -65,6 +92,7 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
               placeholder="e.g., Epic Claims, SAP Finance, demo-login-site"
               value={targetSystem}
               onChange={(e) => setTargetSystem(e.target.value)}
+              icon={<Server size={16} />}
               required
             />
             <Input
@@ -73,11 +101,13 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
               type="url"
               value={targetUrl}
               onChange={(e) => setTargetUrl(e.target.value)}
+              icon={<Globe size={16} />}
             />
             <Select
               label="Audit Type"
               value={auditType}
               onChange={(e) => setAuditType(e.target.value)}
+              icon={<ClipboardList size={16} />}
               options={[
                 { value: '', label: 'Select audit type...' },
                 { value: 'claims', label: 'Claims Audit' },
@@ -88,9 +118,29 @@ function NewAuditForm({ onCreated }: { onCreated: (sessionId: string) => void })
                 { value: 'custom', label: 'Custom' },
               ]}
             />
+
+            {/* Audit type hint */}
+            {auditType && AUDIT_TYPE_ICONS[auditType] && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border border-[var(--border-subtle)] animate-[fadeIn_var(--motion-fast)_var(--ease-out)]">
+                {AUDIT_TYPE_ICONS[auditType]}
+                <span className="text-xs text-[var(--text-secondary)]">
+                  {auditType === 'claims' && 'Reviews claim submissions, adjudication logic, and payment accuracy'}
+                  {auditType === 'compliance' && 'Checks regulatory adherence, access controls, and audit trails'}
+                  {auditType === 'security' && 'Assesses authentication, authorization, and data exposure risks'}
+                  {auditType === 'data_quality' && 'Validates data completeness, consistency, and transformation correctness'}
+                  {auditType === 'financial' && 'Examines transaction records, reconciliation, and financial controls'}
+                  {auditType === 'custom' && 'Flexible audit — describe what to check in the chat'}
+                </span>
+              </div>
+            )}
+
             <div className="pt-2">
               <Button type="submit" disabled={creating || !targetSystem.trim()} size="lg">
-                {creating && <Loader2 size={16} className="animate-spin" />}
+                {creating ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <ScanSearch size={16} />
+                )}
                 {creating ? 'Creating...' : 'Start Audit'}
               </Button>
             </div>
@@ -228,7 +278,7 @@ function ChatPanel({
               </div>
             )}
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                 msg.role === 'user'
                   ? 'bg-[var(--surface-nav)] text-white rounded-br-md'
                   : 'bg-[var(--surface-raised)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-bl-md'

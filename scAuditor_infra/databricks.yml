@@ -77,6 +77,13 @@ variables:
       The service principal application ID for higher-level (non-dev) deployments.
       Comment out or override if not using a service principal for deployments above dev.
     default: acf021b4-87c6-44ff-b3d7-45c59d63fe4d
+  lakebase_project_id:
+    description: >
+      Lakebase Autoscaling project ID. Must be target-specific so that dev
+      and production environments have isolated OLTP databases. The project_id
+      is a globally unique slug within the workspace — unlike display_name,
+      it is NOT prefixed by DABs development mode.
+    default: sc-auditor
   serverless_environment_version:
     description: The serverless environment version for notebook/job tasks.
     default: "5"

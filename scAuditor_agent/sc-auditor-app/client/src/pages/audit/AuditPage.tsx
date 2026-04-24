@@ -232,7 +232,7 @@ function ChatPanel({
               }`}
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
-              {msg.tool_calls && (
+              {Array.isArray(msg.tool_calls) && (
                 <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-1">
                   {(msg.tool_calls as Array<{ name: string }>).map((tc, i) => (
                     <span

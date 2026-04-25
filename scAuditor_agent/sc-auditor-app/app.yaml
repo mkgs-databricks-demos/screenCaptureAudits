@@ -27,13 +27,17 @@
 
 command: ['npm', 'run', 'start']
 env:
-  # OpenTelemetry — enable trace sampling for custom instrumentation.
+  # OpenTelemetry — trace sampling configuration.
   # The platform injects the OTLP endpoint and batch config automatically;
   # this variable controls whether the app's OTel SDK generates spans.
+  #
+  # NOTE: Set to 1.0 (100%) during dev to capture all server spans for
+  # debugging. Revert to 0.1 (10%) for production to control volume.
+  # See: fixtures/scAuditor Agent Bundle Review, Cell 12 (Diagnosis)
   - name: OTEL_TRACES_SAMPLER
     value: 'parentbased_traceidratio'
   - name: OTEL_TRACES_SAMPLER_ARG
-    value: '0.1'
+    value: '1.0'
 
   # Lakebase — endpoint path for AppKit lakebase plugin
   - name: LAKEBASE_ENDPOINT

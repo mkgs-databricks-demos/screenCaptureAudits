@@ -19,8 +19,6 @@ createApp({
 
     appkit.server.extend((app: any) => {
       // Prepend OTel server-span middleware into Express stack.
-      // Creates SPAN_KIND_SERVER traces (via Express context) and records
-      // server metrics (via the listen patch in otel.ts).
       prependMiddleware(app);
 
       setupAuditRoutes(appkit, app);

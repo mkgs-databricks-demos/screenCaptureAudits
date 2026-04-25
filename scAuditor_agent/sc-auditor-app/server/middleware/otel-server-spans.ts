@@ -12,9 +12,10 @@
  * via the metric API which the sidecar exports continuously. Also creates
  * SPAN_KIND_SERVER trace spans (useful during startup, lost post-startup).
  *
- * IMPORTANT: This middleware must be prepended to the Express stack BEFORE
- * AppKit's built-in middleware (static files, auth). Use prependMiddleware()
- * to achieve this — app.use() runs AFTER AppKit's handlers.
+ * IMPORTANT: This middleware is prepended to the Express stack BEFORE
+ * Express's own init middleware. Therefore it MUST NOT use Express-specific
+ * request methods (req.get, req.protocol, req.hostname). Use raw
+ * http.IncomingMessage properties (req.headers, req.url, req.method) only.
  */
 import { trace, context, metrics, SpanKind, SpanStatusCode } from '@opentelemetry/api';
 import type { Request, Response, NextFunction, Express } from 'express';
@@ -39,15 +40,25 @@ const serverErrorCount = meter.createCounter(
 
 /**
  * Express middleware that creates server spans and records metrics.
+ *
+ * Uses raw http.IncomingMessage properties (not Express helpers) because
+ * prependMiddleware() places this before Express's init middleware.
  */
 export function otelServerSpans(req: Request, res: Response, next: NextFunction): void {
   const startTime = Date.now();
   const method = req.method;
-  const target = req.originalUrl;
+  // Use raw req.url (IncomingMessage) with fallback to req.originalUrl (Express)
+  const target = req.originalUrl ?? req.url ?? '/';
   const path = target.split('?')[0];
 
   // --- Metric: count the request ---
   serverRequestCount.add(1, { 'http.method': method, 'http.target': path });
+
+  // Raw http.IncomingMessage header access (safe before Express init)
+  const hostHeader = req.headers?.host ?? 'unknown';
+  const hostname = hostHeader.split(':')[0];
+  const userAgent = req.headers?.['user-agent'] ?? '';
+  const scheme = (req.socket as any)?.encrypted ? 'https' : 'http';
 
   // --- Trace: create a server span ---
   const span = tracer.startSpan(`${method} ${path}`, {
@@ -55,11 +66,11 @@ export function otelServerSpans(req: Request, res: Response, next: NextFunction)
     attributes: {
       'http.method': method,
       'http.target': target,
-      'http.scheme': req.protocol,
-      'http.host': req.hostname,
-      'http.user_agent': req.get('user-agent') ?? '',
-      'net.host.name': req.hostname,
-      'net.host.port': Number(req.socket.localPort),
+      'http.scheme': scheme,
+      'http.host': hostname,
+      'http.user_agent': userAgent,
+      'net.host.name': hostname,
+      'net.host.port': Number(req.socket?.localPort),
     },
   });
 
@@ -114,12 +125,12 @@ export function otelServerSpans(req: Request, res: Response, next: NextFunction)
  */
 export function prependMiddleware(app: Express): void {
   // Force Express to initialize its router (it's lazy)
-  // @ts-expect-error — Express internal API
+  // @ts-expect-error \u2014 Express internal API
   app.lazyrouter?.();
 
   // Create a layer manually by temporarily using app.use,
   // then moving the new layer to the front
-  // @ts-expect-error — Express internal
+  // @ts-expect-error \u2014 Express internal
   const router = app._router;
   if (!router) {
     // Fallback: just use app.use() normally

@@ -39,6 +39,16 @@ env:
   - name: OTEL_TRACES_SAMPLER_ARG
     value: '1.0'
 
+  # Playwright — browser binary management.
+  # PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 prevents the ~130MB Chromium download
+  # during `npm install` (build phase), which exceeds build env constraints.
+  # The browser is installed at runtime via the `prestart` npm script instead.
+  # PLAYWRIGHT_BROWSERS_PATH puts binaries in /tmp for guaranteed write access.
+  - name: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+    value: '1'
+  - name: PLAYWRIGHT_BROWSERS_PATH
+    value: '/tmp/pw-browsers'
+
   # Lakebase — endpoint path for AppKit lakebase plugin
   - name: LAKEBASE_ENDPOINT
     valueFrom: postgres

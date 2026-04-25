@@ -19,19 +19,19 @@ const links = [
 
 export function Navbar() {
   return (
-    <nav className="bg-[var(--surface-nav)] text-white px-6 py-0 flex items-center justify-between transition-colors duration-[var(--motion-slow)]">
+    <nav className="nav-surface text-white px-6 py-0 flex items-center justify-between transition-colors duration-[var(--motion-slow)]">
       {/* Left: Logo + Nav */}
       <div className="flex items-center gap-8">
         {/* Brand mark */}
-        <div className="flex items-center gap-4 -my-3">
+        <div className="flex items-center gap-5 -my-3">
           <img
             src={ICON_AGENT_BRICKS_CONTAINER}
             alt="SC Auditor"
             className="w-[120px] h-[120px] rounded-2xl drop-shadow-xl"
           />
           <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-tight leading-none">SC Auditor</span>
-            <span className="text-[10px] text-white/50 font-medium tracking-widest uppercase leading-none mt-1">Screen Capture</span>
+            <span className="font-bold text-3xl tracking-tight leading-none">SC Auditor</span>
+            <span className="text-sm text-white/50 font-medium tracking-widest uppercase leading-none mt-1.5">Screen Capture</span>
           </div>
         </div>
 

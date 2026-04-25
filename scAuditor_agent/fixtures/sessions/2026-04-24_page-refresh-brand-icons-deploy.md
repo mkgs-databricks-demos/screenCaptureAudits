@@ -283,7 +283,7 @@ The hint bar uses `animate-[fadeIn_var(--motion-fast)_var(--ease-out)]` for a sm
 <img src={ICON_AGENT_BRICKS_CONTAINER} alt="SC Auditor" className="w-[120px] h-[120px] rounded-2xl drop-shadow-xl" />
 ```
 
-**Why 120px:** User iterated from 40px → 60px (1.5×) → 120px (2×), wanting the brand mark to "feel special" and be at least as tall as the navbar menu items. At 120px the icon is a hero element — taller than the nav links (~48px) — establishing clear visual hierarchy. Uses `-my-3` negative margin to let the icon overflow the navbar's natural height without adding padding. The `rounded-xl` was upgraded to `rounded-2xl` and `drop-shadow-lg` to `drop-shadow-xl` to match the larger scale. Title text bumped from `text-base` to `text-lg` with `gap-4` for proportional spacing. All nav links and the theme selector remain unchanged.
+**Why 120px:** User iterated from 40px → 60px (1.5×) → 120px (2×), wanting the brand mark to "feel special" and be at least as tall as the navbar menu items. At 120px the icon is a hero element — taller than the nav links (\~48px) — establishing clear visual hierarchy. Uses `-my-3` negative margin to let the icon overflow the navbar's natural height without adding padding. The `rounded-xl` was upgraded to `rounded-2xl` and `drop-shadow-lg` to `drop-shadow-xl` to match the larger scale. Title text bumped from `text-base` to `text-lg` with `gap-4` for proportional spacing. All nav links and the theme selector remain unchanged.
 
 **Why Agent Bricks Container:**
 - The app IS an AI agent — Agent Bricks is the correct product identity

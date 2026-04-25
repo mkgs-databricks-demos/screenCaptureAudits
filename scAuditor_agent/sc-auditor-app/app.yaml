@@ -27,13 +27,27 @@
 
 command: ['npm', 'run', 'start']
 env:
-  # OpenTelemetry — enable trace sampling for custom instrumentation.
+  # OpenTelemetry — trace sampling configuration.
   # The platform injects the OTLP endpoint and batch config automatically;
   # this variable controls whether the app's OTel SDK generates spans.
+  #
+  # NOTE: Set to 1.0 (100%) during dev to capture all server spans for
+  # debugging. Revert to 0.1 (10%) for production to control volume.
+  # See: fixtures/scAuditor Agent Bundle Review, Cell 12 (Diagnosis)
   - name: OTEL_TRACES_SAMPLER
     value: 'parentbased_traceidratio'
   - name: OTEL_TRACES_SAMPLER_ARG
-    value: '0.1'
+    value: '1.0'
+
+  # Playwright — browser binary management.
+  # PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 prevents the ~130MB Chromium download
+  # during `npm install` (build phase), which exceeds build env constraints.
+  # The browser is installed at runtime via the `prestart` npm script instead.
+  # PLAYWRIGHT_BROWSERS_PATH puts binaries in /tmp for guaranteed write access.
+  - name: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+    value: '1'
+  - name: PLAYWRIGHT_BROWSERS_PATH
+    value: '/tmp/pw-browsers'
 
   # Lakebase — endpoint path for AppKit lakebase plugin
   - name: LAKEBASE_ENDPOINT

@@ -4,7 +4,8 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=production node --import ./dist/otel.js --env-file-if-exists=./.env ./dist/server.js",
+    "start": "LD_LIBRARY_PATH=/tmp/chromium-deps/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-} NODE_ENV=production node --import ./dist/otel.js --env-file-if-exists=./.env ./dist/server.js",
+    "prestart": "playwright install chromium 2>&1 | tail -3 && bash scripts/install-chromium-deps.sh || echo '[playwright] Browser setup incomplete'",
     "dev": "NODE_ENV=development tsx watch --tsconfig ./tsconfig.server.json --env-file-if-exists=./.env ./server/server.ts",
     "build:client": "tsc -b tsconfig.client.json && vite build --config client/vite.config.ts",
     "build:server": "tsdown -c tsdown.server.config.ts",
@@ -26,7 +27,7 @@
   "keywords": [],
   "author": "",
   "license": "Unlicensed",
-  "description": "AI-powered screen capture audit tool — Powered by Databricks AppKit",
+  "description": "AI-powered screen capture audit tool \u2014 Powered by Databricks AppKit",
   "dependencies": {
     "@databricks/appkit": "0.20.3",
     "@databricks/appkit-ui": "0.20.3",
@@ -38,6 +39,7 @@
     "@opentelemetry/sdk-logs": "^0.203.0",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/sdk-trace-node": "^2.0.1",
     "@databricks/sdk-experimental": "^0.14.2",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",

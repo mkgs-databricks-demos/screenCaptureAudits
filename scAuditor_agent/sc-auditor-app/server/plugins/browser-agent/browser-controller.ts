@@ -3,8 +3,59 @@
  *
  * Manages a persistent browser context that the agent uses to navigate
  * target systems, interact with page elements, and capture screenshots.
+ *
+ * Browser binary + system dependency management:
+ * The Chromium binary and its shared libraries (libnss3, libatk, etc.) are
+ * NOT included in the build artifact. They're installed at runtime:
+ *   1. `prestart` npm script: `playwright install --with-deps chromium`
+ *      Downloads the browser binary AND installs system libraries via apt.
+ *   2. Lazy-init fallback in launch(): re-downloads the browser binary if
+ *      the prestart step was skipped. System deps must already be present.
+ *
+ * PLAYWRIGHT_BROWSERS_PATH is set in app.yaml to /tmp/pw-browsers for
+ * guaranteed write access in the App container.
  */
+import { execSync } from 'node:child_process';
+import { dirname, join } from 'node:path';
+import { createRequire } from 'node:module';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+
+const require = createRequire(import.meta.url);
+
+/** Resolve the path to the Playwright CLI script. */
+function getPlaywrightCliPath(): string {
+  const playwrightDir = dirname(require.resolve('playwright/package.json'));
+  return join(playwrightDir, 'cli.js');
+}
+
+/** Check if the Chromium binary is available without launching it. */
+function isChromiumInstalled(): boolean {
+  try {
+    chromium.executablePath();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Download the Chromium browser binary via the Playwright CLI. */
+function downloadChromium(): void {
+  console.log('[browser] Chromium binary not found \u2014 downloading...');
+  try {
+    const cliPath = getPlaywrightCliPath();
+    execSync(`${process.execPath} ${cliPath} install chromium`, {
+      stdio: 'inherit',
+      timeout: 120_000,
+      env: {
+        ...process.env,
+        PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH || '/tmp/pw-browsers',
+      },
+    });
+    console.log('[browser] Chromium binary downloaded successfully');
+  } catch (err) {
+    console.error('[browser] Chromium download failed:', err);
+  }
+}
 
 export class BrowserController {
   private browser: Browser | null = null;
@@ -13,6 +64,12 @@ export class BrowserController {
 
   async launch(): Promise<void> {
     if (this.browser) return;
+
+    // Lazy-download: if prestart didn't run or failed, download binary now.
+    // System deps (libnss3, libatk, etc.) must already be installed by prestart.
+    if (!isChromiumInstalled()) {
+      downloadChromium();
+    }
 
     this.browser = await chromium.launch({
       headless: true,
@@ -104,7 +161,6 @@ export class BrowserController {
   }> {
     const page = this.getPage();
     const textContent = await page.evaluate(() => {
-      // Get visible text, limiting to a reasonable size for LLM context
       const body = document.body;
       if (!body) return '';
       const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);

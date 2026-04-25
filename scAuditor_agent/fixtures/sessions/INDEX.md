@@ -2,6 +2,7 @@
 
 | Date | Session | File |
 | --- | --- | --- |
+| 2026-04-25 | OTel server metrics fix — http.Server.prototype.listen patch, sidecar trace/metric behavior diagnosis | [2026-04-25_otel-server-metrics-fix.md](2026-04-25_otel-server-metrics-fix.md) |
 | 2026-04-25 | OTel diagnosis — missing server spans, gRPC exporters, manual middleware, Playwright investigation | [2026-04-25_otel-diagnosis-grpc-middleware-playwright.md](2026-04-25_otel-diagnosis-grpc-middleware-playwright.md) |
 | 2026-04-25 | Nav gradient, footer enhancement, body surfaces, HC dark mode fix — deployments #11–#13 | [2026-04-25_nav-gradient-footer-body-surfaces.md](2026-04-25_nav-gradient-footer-body-surfaces.md) |
 | 2026-04-24 | Page refresh — brand CDN icons, favicon, audit form icons, 120px navbar hero brand mark, icon audit, 10 deployments | [2026-04-24_page-refresh-brand-icons-deploy.md](2026-04-24_page-refresh-brand-icons-deploy.md) |
